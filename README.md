@@ -7,12 +7,11 @@ Starting with the **PHP ecosystem**. More ecosystems planned.
 
 ## Risk signals tracked
 
-| Signal |
-|---|
-| No activity for 6+ months |
-| Known unpatched CVEs |
-| Single maintainer |
-| High dependents count |
+| Signal | Ready |
+|---|---|
+| No activity for 12+ months | ✔️|
+| Known unpatched CVEs | ❌ |
+| Single maintainer | ❌ |
 
 A package is flagged when it scores high on at least one signal **and** is widely depended upon - obscure abandoned packages are not the target.
 
