@@ -41,6 +41,7 @@ def fetch_package_details(package_name):
         "package_url": f"https://packagist.org/packages/{package_name}",
         "description": data.get("description", ""),
         "repository": data.get("repository", ""),
+        "abandoned": data.get("abandoned", False),
         "downloads_total": downloads.get("total", 0),
         "downloads_monthly": downloads.get("monthly", 0),
         "downloads_daily": downloads.get("daily", 0),
@@ -97,6 +98,8 @@ def main():
 
             try:
                 details = fetch_package_details(name)
+                if details["abandoned"]:
+                    continue
             except Exception as e:
                 print(f"Failed to fetch details for {name}: {e}")
                 continue
