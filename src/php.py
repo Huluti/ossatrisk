@@ -38,6 +38,7 @@ def fetch_package_details(package_name):
     downloads = data.get("downloads", {})
     return {
         "name": data.get("name", ""),
+        "package_url": f"https://packagist.org/packages/{package_name}",
         "description": data.get("description", ""),
         "repository": data.get("repository", ""),
         "downloads_total": downloads.get("total", 0),

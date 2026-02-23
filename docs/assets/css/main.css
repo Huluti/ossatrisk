@@ -372,14 +372,23 @@ tbody tr:hover td {
   background: #ffffff06;
 }
 
+#package-table {
+    .icon {
+        height: 16px;
+        vertical-align: middle;
+    }
+}
+
 .pkg-name {
   color: var(--accent);
   font-weight: 500;
+  text-decoration: none;
 }
 
 .pkg-vendor {
   color: var(--dim);
   font-weight: 400;
+  text-decoration: none;
 }
 
 .score-badge {
@@ -397,10 +406,6 @@ tbody tr:hover td {
 .score-mid {
   background: #d2992218;
   color: var(--yellow);
-}
-.score-low {
-  background: #f8514918;
-  color: var(--green);
 }
 
 .date-cell {

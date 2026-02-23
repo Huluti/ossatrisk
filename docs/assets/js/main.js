@@ -108,12 +108,12 @@ function render() {
     .map((p, i) => {
       const [vendor, pkg] = (p.name || "").split("/");
       const nameHtml = pkg
-        ? `<span class="pkg-vendor">${vendor}/</span><span class="pkg-name">${pkg}</span>`
-        : `<span class="pkg-name">${p.name}</span>`;
+        ? `<a href="${p.package_url}" class="pkg-vendor">${vendor}/</a><a href="${p.package_url}" class="pkg-name">${pkg}</a>`
+        : `<a href="${p.package_url}" class="pkg-name">${p.name}</a>`;
 
       const score = p.score || 0;
       let scoreCls =
-        score > 66 ? "score-high" : score > 33 ? "score-mid" : "score-low";
+        score > 66 ? "score-high" : "score-mid";
       const scoreLabel = score.toLocaleString(undefined, {
         maximumFractionDigits: 1,
       });
@@ -130,6 +130,7 @@ function render() {
 
       return `<tr style="animation-delay:${Math.min(i, 30) * 12}ms">
       <td>${nameHtml}</td>
+      <td><a href="${p.repository}" target="_blank"><img src="assets/img/git-solid.svg" class="icon" alt="Repository"></a></td>
       <td class="num-cell">${(p.downloads_total || 0).toLocaleString()}</td>
       <td class="num-cell">${(p.favers || 0).toLocaleString()}</td>
       <td class="${dateCls}">${dateLabel}</td>
