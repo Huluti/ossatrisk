@@ -112,8 +112,7 @@ function render() {
         : `<a href="${p.package_url}" class="pkg-name">${p.name}</a>`;
 
       const score = p.score || 0;
-      let scoreCls =
-        score > 66 ? "score-high" : "score-mid";
+      let scoreCls = score > 66 ? "score-high" : "score-mid";
       const scoreLabel = score.toLocaleString(undefined, {
         maximumFractionDigits: 1,
       });

@@ -373,10 +373,10 @@ tbody tr:hover td {
 }
 
 #package-table {
-    .icon {
-        height: 16px;
-        vertical-align: middle;
-    }
+  .icon {
+    height: 16px;
+    vertical-align: middle;
+  }
 }
 
 .pkg-name {
