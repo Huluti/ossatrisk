@@ -18,8 +18,8 @@ A package is flagged when it scores high on at least one signal **and** is widel
 ## Contributing
 
 Contributions welcome - especially:
-- Adding packages to the watchlist
 - Improving the scoring logic
+- Improving the project structure
 - Adding new ecosystems
 
 ## License
