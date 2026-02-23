@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ossatrisk — open source risk index</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <header>
+      <a class="logo" href="/">
+        <div class="logo-icon">🦴</div>
+        <div>
+          <div class="logo-text">ossatrisk</div>
+          <div class="logo-sub">open source risk index</div>
+        </div>
+      </a>
+      <nav>
+        <a
+          class="nav-link"
+          href="https://github.com/Huluti/ossatrisk"
+          target="_blank"
+          >github</a
+        >
+      </nav>
+    </header>
+
+    <main>
+      <div class="cmd-bar">
+        <span class="prompt">$</span>
+        <span class="cmd-title"
+          >ossatrisk scan --ecosystem
+          <span id="eco-label" style="color: var(--accent)">php</span
+          ><span class="cmd-cursor"></span
+        ></span>
+      </div>
+
+      <!-- Ecosystem chooser -->
+      <div class="ecosystem-bar">
+        <button
+          class="eco-tab active"
+          data-eco="php"
+          data-url="https://raw.githubusercontent.com/Huluti/ossatrisk/main/data/php-packages.json"
+        >
+          <span class="eco-dot"></span> PHP / Packagist
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">high risk</div>
+          <div class="stat-value" id="stat-total" style="color: var(--red)">
+            —
+          </div>
+          <div class="stat-sub">oss projects at risk</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">total installs</div>
+          <div class="stat-value" id="stat-installs">—</div>
+          <div class="stat-sub">combined downloads</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">total stars</div>
+          <div class="stat-value" id="stat-favers">—</div>
+          <div class="stat-sub">combined stars</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input
+            class="search-input"
+            id="search"
+            type="text"
+            placeholder="filter packages..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <select class="sort-select" id="sort-by">
+          <option value="score_desc">score ↓</option>
+          <option value="score_asc">score ↑</option>
+          <option value="downloads_desc">installs ↓</option>
+          <option value="downloads_asc">installs ↑</option>
+          <option value="name_asc">name A→Z</option>
+          <option value="release_desc">newest first</option>
+        </select>
+        <span class="result-count" id="result-count"></span>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-col="name">Package<span class="sort-arrow">↕</span></th>
+              <th data-col="downloads_total">
+                Installs<span class="sort-arrow">↕</span>
+              </th>
+              <th data-col="favers">
+                ⭐ Stars<span class="sort-arrow">↕</span>
+              </th>
+              <th data-col="latest_release">
+                Last Release<span class="sort-arrow">↕</span>
+              </th>
+              <th data-col="score">
+                Risk Score<span class="sort-arrow">↕</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="package-table">
+            <tr class="status-row">
+              <td colspan="5">
+                <span class="loading-dots">loading</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <footer>
+      <span>ossatrisk</span>
+      <span class="footer-sep">·</span>
+      <a href="https://github.com/Huluti/ossatrisk" target="_blank"
+        >source on github</a
+      >
+      <span style="margin-left: auto"
+        >built with ♥ for the open source community</span
+      >
+    </footer>
+
+    <script src="main.js"></script>
+  </body>
+</html>

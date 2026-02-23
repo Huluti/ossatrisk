@@ -1,0 +1,9 @@
+[project]
+name = "ossatrisk"
+version = "0.1.0"
+description = "Tracking high-risk oss packages: abandoned, undermaintained, or CVE-exposed. "
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "requests>=2.32.5",
+]
