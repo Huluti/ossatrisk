@@ -48,6 +48,7 @@ header {
 }
 
 .logo-icon {
+  display: block;
   width: 28px;
   height: 28px;
   border: 1.5px solid var(--accent);
