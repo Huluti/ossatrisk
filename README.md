@@ -9,6 +9,7 @@ The goal is not to name and shame, but to understand the ecosystem and suggest r
 
 ---
 
+
 Starting with the **PHP ecosystem**. More ecosystems planned.
 
 ## Risk signals tracked
