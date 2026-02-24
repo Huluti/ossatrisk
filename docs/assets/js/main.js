@@ -1,10 +1,17 @@
 let packages = [];
 let filtered = [];
+let sortCol = "score"; // active data key
+let sortDir = "desc"; // 'asc' | 'desc'
 
 const tbody = document.getElementById("package-table");
 const searchEl = document.getElementById("search");
 const sortEl = document.getElementById("sort-by");
 const countEl = document.getElementById("result-count");
+
+// Columns where sort is not available
+const UNSORTABLE = new Set(["actions", "repository"]);
+// Columns that sort lexicographically
+const STRING_COLS = new Set(["name", "latest_release"]);
 
 // ── Ecosystem tabs ──────────────────────────────────────────
 document.querySelectorAll(".eco-tab:not(.soon)").forEach((tab) => {
@@ -53,7 +60,7 @@ function fmtCompact(n) {
   return n.toLocaleString();
 }
 
-// ── Filter & sort ───────────────────────────────────────────
+// ── Filter ──────────────────────────────────────────────────
 function applyFilter() {
   const q = searchEl.value.trim().toLowerCase();
   filtered = q
@@ -61,37 +68,71 @@ function applyFilter() {
     : [...packages];
 }
 
+// ── Sort ────────────────────────────────────────────────────
 function applySort() {
-  const [key, dir] = sortEl.value.split("_");
-  const asc = dir === "asc";
-
+  const asc = sortDir === "asc";
   filtered.sort((a, b) => {
-    let av, bv;
-    if (key === "name") {
-      av = a.name || "";
-      bv = b.name || "";
+    if (STRING_COLS.has(sortCol)) {
+      const av = (a[sortCol] || "").toString();
+      const bv = (b[sortCol] || "").toString();
       return asc ? av.localeCompare(bv) : bv.localeCompare(av);
     }
-    if (key === "release") {
-      av = a.latest_release || "";
-      bv = b.latest_release || "";
-      return asc ? av.localeCompare(bv) : bv.localeCompare(av);
-    }
-    if (key === "cves") {
-      av = a.cves_count || 0;
-      bv = b.cves_count || 0;
-      return asc ? av - bv : bv - av;
-    }
-    if (key === "downloads") {
-      av = a.downloads_total || 0;
-      bv = b.downloads_total || 0;
-    } else {
-      av = a[key] || 0;
-      bv = b[key] || 0;
-    }
+    const av = a[sortCol] || 0;
+    const bv = b[sortCol] || 0;
     return asc ? av - bv : bv - av;
   });
 }
+
+// ── Update header arrow UI ───────────────────────────────────
+function updateSortUI() {
+  document.querySelectorAll("th[data-col]").forEach((th) => {
+    const col = th.dataset.col;
+    const arrow = th.querySelector(".sort-arrow");
+    if (!arrow) return;
+    if (col === sortCol) {
+      th.classList.add("sorted");
+      arrow.textContent = sortDir === "asc" ? "↑" : "↓";
+    } else {
+      th.classList.remove("sorted");
+      arrow.textContent = "↕";
+    }
+  });
+  // Sync dropdown if a matching option exists
+  const match = sortEl.querySelector(`option[value="${sortCol}_${sortDir}"]`);
+  if (match) sortEl.value = match.value;
+}
+
+// ── Wire th clicks ───────────────────────────────────────────
+document.querySelectorAll("th[data-col]").forEach((th) => {
+  const col = th.dataset.col;
+  if (UNSORTABLE.has(col)) {
+    th.style.cursor = "default";
+    return;
+  }
+  th.style.cursor = "pointer";
+  th.addEventListener("click", () => {
+    if (sortCol === col) {
+      sortDir = sortDir === "asc" ? "desc" : "asc";
+    } else {
+      sortCol = col;
+      sortDir = STRING_COLS.has(col) ? "asc" : "desc";
+    }
+    updateSortUI();
+    render();
+  });
+});
+
+// ── Dropdown ─────────────────────────────────────────────────
+sortEl.addEventListener("change", () => {
+  const parts = sortEl.value.split("_");
+  sortDir = parts.pop(); // last token is dir
+  sortCol = parts.join("_"); // rest is the col key (handles downloads_total)
+  updateSortUI();
+  render();
+});
+
+// ── Search ───────────────────────────────────────────────────
+searchEl.addEventListener("input", render);
 
 // ── Render ──────────────────────────────────────────────────
 function render() {
@@ -160,11 +201,9 @@ function render() {
     </tr>`;
     })
     .join("");
-}
 
-// ── Events ──────────────────────────────────────────────────
-searchEl.addEventListener("input", render);
-sortEl.addEventListener("change", render);
+  updateSortUI();
+}
 
 // ── Boot ────────────────────────────────────────────────────
 loadJSON(

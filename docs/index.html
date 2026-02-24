@@ -87,12 +87,14 @@
         <select class="sort-select" id="sort-by">
           <option value="score_desc">score ↓</option>
           <option value="score_asc">score ↑</option>
-          <option value="downloads_desc">installs ↓</option>
-          <option value="downloads_asc">installs ↑</option>
-          <option value="cves_desc">CVEs ↓</option>
-          <option value="cves_asc">CVEs ↑</option>
+          <option value="downloads_total_desc">installs ↓</option>
+          <option value="downloads_total_asc">installs ↑</option>
+          <option value="cves_count_desc">CVEs ↓</option>
+          <option value="cves_count_asc">CVEs ↑</option>
           <option value="name_asc">name A→Z</option>
-          <option value="release_desc">newest first</option>
+          <option value="name_desc">name Z→A</option>
+          <option value="latest_release_desc">newest first</option>
+          <option value="latest_release_asc">oldest first</option>
         </select>
         <span class="result-count" id="result-count"></span>
       </div>
@@ -113,7 +115,7 @@
               <th data-col="latest_release">
                 Last Release<span class="sort-arrow">↕</span>
               </th>
-              <th data-col="cves">CVEs<span class="sort-arrow">↕</span></th>
+              <th data-col="cves_count">CVEs<span class="sort-arrow">↕</span></th>
               <th data-col="score">
                 Risk Score<span class="sort-arrow">↕</span>
               </th>
