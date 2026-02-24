@@ -13,7 +13,7 @@ The goal is not to name and shame, but to understand the ecosystem and suggest r
 
 | Signal |
 |---|
-| No activity for 12+ months |
+| No release for 12+ months |
 | Known unpatched CVEs |
 | Single maintainer |
 

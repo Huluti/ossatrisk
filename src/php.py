@@ -46,13 +46,6 @@ def fetch_package_details(package_name):
     downloads = data.get("downloads", {})
     maintainers_count = max(1, len(data.get("maintainers", {})))
 
-    # Author email from latest version
-    author_email = ""
-    if latest_version:
-        authors = latest_version.get("authors", [])
-        if authors:
-            author_email = authors[0].get("email", "")
-
     # --- Fetch CVEs ---
     cves_count = 0
     try:
@@ -74,7 +67,6 @@ def fetch_package_details(package_name):
         "repository": data.get("repository", ""),
         "abandoned": data.get("abandoned", False),
         "maintainers_count": maintainers_count,
-        "author_email": author_email,
         "downloads_total": downloads.get("total", 0),
         "downloads_monthly": downloads.get("monthly", 0),
         "downloads_daily": downloads.get("daily", 0),

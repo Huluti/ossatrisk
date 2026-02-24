@@ -467,12 +467,12 @@ tbody tr:hover td {
   color: #fff;
 }
 
-.btn-contact {
+.btn-issues {
   border-color: #3fb95044;
   color: var(--green);
 }
 
-.btn-contact:hover {
+.btn-issues:hover {
   background: #3fb95014;
   border-color: var(--green);
   color: #fff;

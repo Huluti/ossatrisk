@@ -172,17 +172,13 @@ function render() {
         else dateCls = "error-cell"; // older than ~2 years
       }
 
-      let actionsHtml = "";
-      if (p.author_email && p.author_email.trim() !== "") {
-        actionsHtml += `<a href="mailto:${p.author_email}" class="btn-action btn-contact">
-              <img src="assets/img/send-mail.svg" class="icon" alt="Contact latest author">
-              Contact author
-            </a>`;
-      }
-      actionsHtml += `<a href="${p.repository}/fork" target="_blank" class="btn-action btn-fork">
-              <img src="assets/img/git-fork.svg" class="icon" alt="Fork">
-              Fork
-            </a>`;
+      const actionsHtml = `<a href="${p.repository}/issues" target="_blank" class="btn-action btn-issues">
+        <img src="assets/img/list.svg" class="icon" alt="Check issues">
+        Check issues
+      </a><a href="${p.repository}/fork" target="_blank" class="btn-action btn-fork">
+        <img src="assets/img/git-fork.svg" class="icon" alt="Fork">
+        Fork
+      </a>`;
 
       return `<tr style="animation-delay:${Math.min(i, 30) * 12}ms">
       <td>${nameHtml}</td>
