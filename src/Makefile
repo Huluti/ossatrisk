@@ -1,5 +1,5 @@
 run_php:
-	uv run php.py
+	uv run python -u php.py
 
 format:
 	uv format
