@@ -1,7 +1,5 @@
 let packages = [];
 let filtered = [];
-let sortKey = "score";
-let sortDir = "desc";
 
 const tbody = document.getElementById("package-table");
 const searchEl = document.getElementById("search");
@@ -78,6 +76,11 @@ function applySort() {
       av = a.latest_release || "";
       bv = b.latest_release || "";
       return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+    }
+    if (key === "cves") {
+      av = a.cves_count || 0;
+      bv = b.cves_count || 0;
+      return asc ? av - bv : bv - av;
     }
     if (key === "downloads") {
       av = a.downloads_total || 0;
