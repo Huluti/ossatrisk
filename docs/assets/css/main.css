@@ -97,7 +97,7 @@ nav {
 
 /* ── Main layout ── */
 main {
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 32px 28px;
 }
@@ -327,7 +327,7 @@ thead tr {
 }
 
 th {
-  padding: 10px 14px;
+  padding: 8px;
   text-align: left;
   font-size: 10px;
   font-weight: 500;
@@ -354,7 +354,7 @@ th.sorted .sort-arrow {
 }
 
 td {
-  padding: 9px 14px;
+  padding: 8px;
   border-bottom: 1px solid var(--border);
   color: var(--text);
   font-size: 12px;
@@ -419,6 +419,51 @@ tbody tr:hover td {
 }
 .date-ancient {
   color: var(--red);
+}
+
+.action-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+  background: var(--surface);
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.btn-fork {
+  border-color: #388bfd44;
+  color: var(--accent);
+}
+
+.btn-fork:hover {
+  background: #388bfd14;
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn-contact {
+  border-color: #3fb95044;
+  color: var(--green);
+}
+
+.btn-contact:hover {
+  background: #3fb95014;
+  border-color: var(--green);
+  color: #fff;
 }
 
 .num-cell {

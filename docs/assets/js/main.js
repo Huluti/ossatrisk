@@ -127,13 +127,31 @@ function render() {
         else dateCls = "date-ancient";
       }
 
+      let actionsHtml = "";
+      if (p.author_email && p.author_email.trim() !== "") {
+        actionsHtml += `<a href="mailto:${p.author_email}" class="btn-action btn-contact">
+              <img src="assets/img/send-mail.svg" class="icon" alt="Contact latest author">
+              Contact author
+            </a>`;
+      }
+      actionsHtml += `<a href="${p.repository}/fork" target="_blank" class="btn-action btn-fork">
+              <img src="assets/img/git-fork.svg" class="icon" alt="Fork">
+              Fork
+            </a>`;
+
       return `<tr style="animation-delay:${Math.min(i, 30) * 12}ms">
       <td>${nameHtml}</td>
-      <td><a href="${p.repository}" target="_blank"><img src="assets/img/git-solid.svg" class="icon" alt="Repository"></a></td>
+      <td class="action-cell">
+          <a href="${p.repository}" target="_blank" class="btn-action btn-contact">
+            <img src="assets/img/git.svg" class="icon" alt="Repository">
+            Repository
+          </a>
+      </td>
       <td class="num-cell">${(p.downloads_total || 0).toLocaleString()}</td>
       <td class="num-cell">${(p.favers || 0).toLocaleString()}</td>
       <td class="${dateCls}">${dateLabel}</td>
       <td><span class="score-badge ${scoreCls}">${scoreLabel}</span></td>
+      <td class="action-cell">${actionsHtml}</td>
     </tr>`;
     })
     .join("");

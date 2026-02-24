@@ -31,17 +31,34 @@ def fetch_package_details(package_name):
     data = response.json()["package"]
 
     versions = data.get("versions", {})
-    latest_time_str = (
-        max(v.get("time", "") for v in versions.values() if "time" in v) or ""
-    )
+
+    # Find latest version by time
+    latest_version = None
+    latest_time_str = ""
+    for version, info in versions.items():
+        if "time" in info:
+            if latest_time_str == "" or info["time"] > latest_time_str:
+                latest_time_str = info["time"]
+                latest_version = info
 
     downloads = data.get("downloads", {})
+    maintainers_count = max(1, len(data.get("maintainers", {})))
+
+    # Author email from latest version
+    author_email = ""
+    if latest_version:
+        authors = latest_version.get("authors", [])
+        if authors:
+            author_email = authors[0].get("email", "")
+
     return {
         "name": data.get("name", ""),
         "package_url": f"https://packagist.org/packages/{package_name}",
         "description": data.get("description", ""),
         "repository": data.get("repository", ""),
         "abandoned": data.get("abandoned", False),
+        "maintainers_count": maintainers_count,
+        "author_email": author_email,
         "downloads_total": downloads.get("total", 0),
         "downloads_monthly": downloads.get("monthly", 0),
         "downloads_daily": downloads.get("daily", 0),
@@ -56,19 +73,20 @@ def fetch_package_details(package_name):
 
 def compute_score(pkg):
     """
-    Score = monthly downloads weighted by recency of last release.
-    More recent releases increase the score more than before.
+    Score = monthly downloads weighted by recency of last release
+    and adjusted for maintainers count.
+    Packages with only 1 maintainer are penalized.
     """
     monthly = pkg.get("downloads_monthly", 0)
     latest_str = pkg.get("latest_release")
-    recency_factor = 1.0
+    maintainers = pkg.get("maintainers_count")
 
+    recency_factor = 1.0
     if latest_str:
         try:
             latest_dt = datetime.fromisoformat(latest_str.replace("Z", "+00:00"))
             days_since = (datetime.now(timezone.utc) - latest_dt).days
-            # give more importance to recent releases
-            # inverse days_since, capped to 5 years
+            # give more importance to recent releases, capped to 5 years
             recency_factor += max(
                 0, (5 * 365 - days_since) / 365
             )  # max recency factor = 6
@@ -76,8 +94,16 @@ def compute_score(pkg):
             pass
 
     # logarithmic scaling for downloads
-    raw_score = math.log1p(monthly) * recency_factor
-    return raw_score
+    base_score = math.log1p(monthly) * recency_factor
+
+    # maintainers factor
+    if maintainers <= 1:
+        maintainers_factor = 0.5  # penalize single maintainer
+    else:
+        maintainers_factor = 1 + math.log(maintainers)  # increase with more maintainers
+
+    final_score = base_score * maintainers_factor
+    return final_score
 
 
 def main():
