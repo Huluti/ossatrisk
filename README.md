@@ -1,7 +1,10 @@
 # ossatrisk
 
-**ossatrisk** surfaces widely-used open source packages that carry silent risk:
-abandoned maintenance, unpatched CVEs, or single-maintainer bus factor.
+**ossatrisk** surfaces widely-used open source packages with hidden risks, like abandoned maintenance, unpatched CVEs, or a single-maintainer bus factor.
+
+Only packages with high impact and broad usage are flagged.
+
+The goal is not to name and shame, but to understand the ecosystem and suggest remediation—contacting maintainers, contributing fixes, or forking when needed.
 
 Starting with the **PHP ecosystem**. More ecosystems planned.
 

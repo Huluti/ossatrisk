@@ -140,6 +140,15 @@ main {
   }
 }
 
+/* ── Description ── */
+
+#description {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--dim);
+  margin-bottom: 24px;
+}
+
 /* ── Ecosystem tabs ── */
 .ecosystem-bar {
   display: flex;
