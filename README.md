@@ -16,8 +16,6 @@ Starting with the **PHP ecosystem**. More ecosystems planned.
 | Known unpatched CVEs |
 | Single maintainer |
 
-A package is flagged when it scores high on at least one signal **and** is widely depended upon - obscure abandoned packages are not the target.
-
 ## Contributing
 
 Contributions welcome - especially:
