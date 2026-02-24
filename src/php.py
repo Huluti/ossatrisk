@@ -83,42 +83,46 @@ def fetch_package_details(package_name):
         "github_open_issues": data.get("github_open_issues", 0),
         "dependents": data.get("dependents", 0),
         "latest_release": latest_time_str,
-        "cves_count": cves_count,  # <-- newly added
+        "cves_count": cves_count,
     }
 
 
 def compute_score(pkg):
     """
-    Score = monthly downloads weighted by recency of last release
-    and adjusted for maintainers count.
+    Score = monthly downloads weighted by recency of last release,
+    adjusted for maintainers count, and penalized for CVEs.
     Packages with only 1 maintainer are penalized.
     """
     monthly = pkg.get("downloads_monthly", 0)
     latest_str = pkg.get("latest_release")
-    maintainers = pkg.get("maintainers_count")
+    maintainers = pkg.get("maintainers_count", 1)
+    cves_count = pkg.get("cves_count", 0)
 
+    # --- Recency factor ---
     recency_factor = 1.0
     if latest_str:
         try:
             latest_dt = datetime.fromisoformat(latest_str.replace("Z", "+00:00"))
             days_since = (datetime.now(timezone.utc) - latest_dt).days
             # give more importance to recent releases, capped to 5 years
-            recency_factor += max(
-                0, (5 * 365 - days_since) / 365
-            )  # max recency factor = 6
+            recency_factor += max(0, (5 * 365 - days_since) / 365)  # max 6
         except Exception:
             pass
 
-    # logarithmic scaling for downloads
+    # --- Base score from downloads ---
     base_score = math.log1p(monthly) * recency_factor
 
-    # maintainers factor
+    # --- Maintainers factor ---
     if maintainers <= 1:
         maintainers_factor = 0.5  # penalize single maintainer
     else:
-        maintainers_factor = 1 + math.log(maintainers)  # increase with more maintainers
+        maintainers_factor = 1 + math.log(maintainers)
 
-    final_score = base_score * maintainers_factor
+    # --- CVE factor ---
+    cve_factor = 1 / (1 + cves_count)  # penalize packages with vulnerabilities
+
+    # --- Final score ---
+    final_score = base_score * maintainers_factor * cve_factor
     return final_score
 
 
