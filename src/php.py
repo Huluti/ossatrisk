@@ -1,6 +1,7 @@
 import json
 import math
 import time
+import numpy as np
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -89,41 +90,49 @@ def fetch_package_details(package_name):
 
 def compute_score(pkg):
     """
-    Score = monthly downloads weighted by recency of last release,
-    adjusted for maintainers count, and penalized for CVEs.
-    Packages with only 1 maintainer are penalized.
+    Compute a risk score where HIGHER score = higher risk.
+
+    Factors:
+    - Recency: older releases = higher risk
+    - CVEs: more CVEs = higher risk
+    - Maintainers: single maintainer = higher risk
+    - Downloads: higher downloads = higher risk (more widely used → bigger impact)
     """
     monthly = pkg.get("downloads_monthly", 0)
+    total_downloads = pkg.get("downloads_total", 0)
     latest_str = pkg.get("latest_release")
     maintainers = pkg.get("maintainers_count", 1)
     cves_count = pkg.get("cves_count", 0)
 
-    # --- Recency factor ---
-    recency_factor = 1.0
+    # --- Recency risk ---
+    recency_risk = 1.0
     if latest_str:
         try:
             latest_dt = datetime.fromisoformat(latest_str.replace("Z", "+00:00"))
             days_since = (datetime.now(timezone.utc) - latest_dt).days
-            # give more importance to recent releases, capped to 5 years
-            recency_factor += max(0, (5 * 365 - days_since) / 365)  # max 6
+            # older packages = higher risk, exponential scale
+            recency_risk += math.exp(days_since / (365))  # doubles every year
         except Exception:
-            pass
+            recency_risk += 2  # fallback risk if date missing
 
-    # --- Base score from downloads ---
-    base_score = math.log1p(monthly) * recency_factor
+    # --- CVE risk ---
+    cve_risk = 1 + cves_count * 2  # weight CVEs heavily
 
-    # --- Maintainers factor ---
+    # --- Maintainer risk ---
     if maintainers <= 1:
-        maintainers_factor = 0.5  # penalize single maintainer
+        maintainer_risk = 3  # high risk
     else:
-        maintainers_factor = 1 + math.log(maintainers)
+        maintainer_risk = 1 + 1 / math.log(
+            maintainers + 1
+        )  # less risk if many maintainers
 
-    # --- CVE factor ---
-    cve_factor = 1 / (1 + cves_count)  # penalize packages with vulnerabilities
+    # --- Downloads risk ---
+    # more downloads → higher risk (more people affected)
+    download_risk = math.log1p(monthly + total_downloads)  # ensure non-zero
 
-    # --- Final score ---
-    final_score = base_score * maintainers_factor * cve_factor
-    return final_score
+    # --- Final risk score ---
+    risk_score = recency_risk * cve_risk * maintainer_risk * download_risk
+    return risk_score
 
 
 def main():
@@ -171,15 +180,13 @@ def main():
         time.sleep(0.2)  # polite delay
 
     # After computing raw scores for all packages
-    raw_scores = [compute_score(p) for p in all_packages]
-    min_score = min(raw_scores)
-    max_score = max(raw_scores)
-
+    raw_scores = np.array([compute_score(p) for p in all_packages])
     for i, p in enumerate(all_packages):
         p["raw_score"] = raw_scores[i]
-        # normalized 0–100, but avoid 0 by using a small offset
-        normalized = (raw_scores[i] - min_score) / (max_score - min_score) * 100
-        p["score"] = max(1, round(normalized))  # ensure at least 1
+        percentile = (raw_scores < raw_scores[i]).sum() / len(
+            raw_scores
+        )  # fraction of packages below
+        p["score"] = max(1, round(percentile * 100))
 
     # Now sort packages descending by normalized score
     all_packages.sort(key=lambda p: p["score"], reverse=True)
