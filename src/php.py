@@ -25,6 +25,7 @@ def fetch_popular(url):
 
 
 def fetch_package_details(package_name):
+    # --- Package info ---
     url = f"https://packagist.org/packages/{package_name}.json"
     response = requests.get(url)
     response.raise_for_status()
@@ -51,6 +52,20 @@ def fetch_package_details(package_name):
         if authors:
             author_email = authors[0].get("email", "")
 
+    # --- Fetch CVEs ---
+    cves_count = 0
+    try:
+        sec_url = (
+            f"https://packagist.org/api/security-advisories/?packages[]={package_name}"
+        )
+        sec_response = requests.get(sec_url)
+        sec_response.raise_for_status()
+        sec_data = sec_response.json()
+        advisories = sec_data.get("advisories", {}).get(package_name, [])
+        cves_count = len(advisories)
+    except Exception:
+        pass  # default 0 if any error
+
     return {
         "name": data.get("name", ""),
         "package_url": f"https://packagist.org/packages/{package_name}",
@@ -67,7 +82,8 @@ def fetch_package_details(package_name):
         "github_forks": data.get("github_forks", 0),
         "github_open_issues": data.get("github_open_issues", 0),
         "dependents": data.get("dependents", 0),
-        "latest_release": latest_time_str,  # ISO string
+        "latest_release": latest_time_str,
+        "cves_count": cves_count,  # <-- newly added
     }
 
 
