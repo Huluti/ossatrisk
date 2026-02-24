@@ -125,9 +125,10 @@ function render() {
       if (p.latest_release) {
         const ageMs = now - new Date(p.latest_release);
         const ageDays = ageMs / 86400000;
-        if (ageDays < 180) dateCls = "date-recent";
-        else if (ageDays < 730) dateCls = "date-old";
-        else dateCls = "date-ancient";
+        // Only two categories since no package < 12 months old
+        if (ageDays < 730)
+          dateCls = "warning-cell"; // updated within ~2 years
+        else dateCls = "error-cell"; // older than ~2 years
       }
 
       let actionsHtml = "";
@@ -153,7 +154,7 @@ function render() {
       <td class="num-cell">${(p.downloads_total || 0).toLocaleString()}</td>
       <td class="num-cell">${(p.favers || 0).toLocaleString()}</td>
       <td class="${dateCls}">${dateLabel}</td>
-      <td class="num-cell">${(p.cves_count || 0).toLocaleString()}</td>
+      <td class="num-cell ${p.cves_count > 0 ? "error-cell" : ""}">${(p.cves_count || 0).toLocaleString()}</td>
       <td><span class="score-badge ${scoreCls}">${scoreLabel}</span></td>
       <td class="action-cell">${actionsHtml}</td>
     </tr>`;

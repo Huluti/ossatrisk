@@ -411,14 +411,15 @@ tbody tr:hover td {
 .date-cell {
   color: var(--dim);
 }
-.date-recent {
-  color: var(--green);
+
+.success-cell {
+  color: var(--green) !important;
 }
-.date-old {
-  color: var(--yellow);
+.warning-cell {
+  color: var(--yellow) !important;
 }
-.date-ancient {
-  color: var(--red);
+.error-cell {
+  color: var(--red) !important;
 }
 
 .action-cell {
