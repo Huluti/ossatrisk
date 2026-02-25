@@ -205,4 +205,9 @@ def main():
 
 
 if __name__ == "__main__":
+    start_time = time.perf_counter()
+
     main()
+
+    elapsed = time.perf_counter() - start_time
+    print(f"\nTotal execution time: {elapsed:.2f} seconds")
