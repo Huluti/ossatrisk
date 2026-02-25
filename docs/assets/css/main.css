@@ -364,9 +364,12 @@ th.sorted .sort-arrow {
   color: var(--accent);
 }
 
+tr {
+  border-bottom: 1px solid var(--border);
+}
+
 td {
   padding: 8px;
-  border-bottom: 1px solid var(--border);
   color: var(--text);
   font-size: 12px;
 }
