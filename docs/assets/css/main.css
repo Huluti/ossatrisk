@@ -436,15 +436,10 @@ tbody tr:hover td {
   color: var(--red) !important;
 }
 
-.action-cell {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .btn-action {
   display: inline-flex;
   align-items: center;
+  margin: 4px;
   gap: 5px;
   font-family: var(--font);
   font-size: 11px;
@@ -459,23 +454,28 @@ tbody tr:hover td {
   white-space: nowrap;
 }
 
-.btn-fork {
+.btn-action:hover {
+    border-color: #d2d2d2;
+    color: #fff;
+}
+
+.btn-blue {
   border-color: #388bfd44;
   color: var(--accent);
 }
 
-.btn-fork:hover {
+.btn-blue:hover {
   background: #388bfd14;
   border-color: var(--accent);
   color: #fff;
 }
 
-.btn-issues {
+.btn-green {
   border-color: #3fb95044;
   color: var(--green);
 }
 
-.btn-issues:hover {
+.btn-green:hover {
   background: #3fb95014;
   border-color: var(--green);
   color: #fff;

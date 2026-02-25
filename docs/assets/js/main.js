@@ -9,7 +9,7 @@ const sortEl = document.getElementById("sort-by");
 const countEl = document.getElementById("result-count");
 
 // Columns where sort is not available
-const UNSORTABLE = new Set(["actions", "repository"]);
+const UNSORTABLE = new Set(["actions"]);
 // Columns that sort lexicographically
 const STRING_COLS = new Set(["name", "latest_release"]);
 
@@ -172,29 +172,26 @@ function render() {
         else dateCls = "error-cell"; // older than ~2 years
       }
 
-      const actionsHtml = `<a href="${p.repository}/issues" target="_blank" class="btn-action btn-issues">
+      const actionsHtml = `<a href="${p.repository}" target="_blank" class="btn-action btn-green">
+        <img src="assets/img/heart.svg" class="icon" alt="Contribute">
+        Contribute
+      </a><a href="${p.repository}/issues" target="_blank" class="btn-action btn-blue">
         <img src="assets/img/list.svg" class="icon" alt="Check issues">
         Check issues
-      </a><a href="${p.repository}/fork" target="_blank" class="btn-action btn-fork">
+      </a><a href="${p.repository}/fork" target="_blank" class="btn-action ">
         <img src="assets/img/git-fork.svg" class="icon" alt="Fork">
         Fork
       </a>`;
 
       return `<tr style="animation-delay:${Math.min(i, 30) * 12}ms">
       <td>${nameHtml}</td>
-      <td class="action-cell">
-          <a href="${p.repository}" target="_blank" class="btn-action btn-contact">
-            <img src="assets/img/git.svg" class="icon" alt="Repository">
-            Repository
-          </a>
-      </td>
       <td class="num-cell">${(p.downloads_total || 0).toLocaleString()}</td>
       <td class="num-cell">${(p.favers || 0).toLocaleString()}</td>
       <td class="num-cell">${(p.github_open_issues || 0).toLocaleString()}</td>
       <td class="${dateCls}">${dateLabel}</td>
       <td class="num-cell ${p.cves_count > 0 ? "error-cell" : ""}">${(p.cves_count || 0).toLocaleString()}</td>
       <td><span class="score-badge ${scoreCls}">${scoreLabel}</span></td>
-      <td class="action-cell">${actionsHtml}</td>
+      <td>${actionsHtml}</td>
     </tr>`;
     })
     .join("");
