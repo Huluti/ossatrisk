@@ -14,6 +14,7 @@ The goal is not to name and shame, but to understand the ecosystem and suggest r
 | Signal |
 |---|
 | No release for 12+ months |
+| Number of open issues (including PRs) |
 | Known unpatched CVEs |
 | Single maintainer |
 
