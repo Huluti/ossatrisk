@@ -4,24 +4,26 @@ import time
 import numpy as np
 from datetime import datetime, timedelta, timezone
 
-import requests
+import httpx
 
 # CONFIG
 MAX_PAGES = 15
 EXCLUDED_PREFIXES = [
-    "symfony/",
-    "laravel/",
     "psr/",
+    "psr-discovery/",
     "composer/",
-]  # generally well maintained packages
+]
 EXCLUDED_PARTS = ["polyfill", "-compat", "_compat"]  # they are meant to be outdated
 OUTPUT_FILE = "../data/php-packages.json"
 POPULAR_URL = "https://packagist.org/explore/popular.json?per_page=100"
 MONTHS_INACTIVE = 12
 
 
+client = httpx.Client(http2=True)
+
+
 def fetch_popular(url):
-    response = requests.get(url)
+    response = client.get(url)
     response.raise_for_status()
     return response.json()
 
@@ -29,7 +31,7 @@ def fetch_popular(url):
 def fetch_package_details(package_name):
     # --- Package info ---
     url = f"https://packagist.org/packages/{package_name}.json"
-    response = requests.get(url)
+    response = client.get(url)
     response.raise_for_status()
     data = response.json()["package"]
 
@@ -53,7 +55,7 @@ def fetch_package_details(package_name):
         sec_url = (
             f"https://packagist.org/api/security-advisories/?packages[]={package_name}"
         )
-        sec_response = requests.get(sec_url)
+        sec_response = client.get(sec_url)
         sec_response.raise_for_status()
         sec_data = sec_response.json()
         advisories = sec_data.get("advisories", {}).get(package_name, [])
