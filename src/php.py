@@ -184,7 +184,7 @@ def main():
         time.sleep(0.2)  # polite delay
 
     # After computing raw scores for all packages
-    raw_scores = np.array([compute_score(p) for p in all_packages])
+    raw_scores = np.array([p["score"] for p in all_packages])
     for i, p in enumerate(all_packages):
         p["raw_score"] = raw_scores[i]
         percentile = (raw_scores < raw_scores[i]).sum() / len(
