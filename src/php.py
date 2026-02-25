@@ -8,12 +8,13 @@ import requests
 
 # CONFIG
 MAX_PAGES = 15
-EXCLUDE_PREFIXES = [
+EXCLUDED_PREFIXES = [
     "symfony/",
     "laravel/",
     "psr/",
     "composer/",
 ]  # generally well maintained packages
+EXCLUDED_PARTS = ["polyfill", "-compat", "_compat"]  # they are meant to be outdated
 OUTPUT_FILE = "../data/php-packages.json"
 POPULAR_URL = "https://packagist.org/explore/popular.json?per_page=100"
 MONTHS_INACTIVE = 12
@@ -148,7 +149,10 @@ def main():
 
         for pkg in data.get("packages", []):
             name = pkg["name"]
-            if any(name.startswith(prefix) for prefix in EXCLUDE_PREFIXES):
+            if any(name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
+                continue
+
+            if any(part in name for part in EXCLUDED_PARTS):
                 continue
 
             try:
