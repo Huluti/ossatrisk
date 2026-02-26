@@ -13,7 +13,9 @@ EXCLUDED_PREFIXES = [
 ]
 EXCLUDED_PARTS = ["polyfill", "-compat", "_compat"]  # they are meant to be outdated
 OUTPUT_FILE = "../data/php-packages.json"
+SUGGESTIONS_FILE = "../data/php-suggestions.json"
 POPULAR_URL = "https://packagist.org/explore/popular.json?per_page=50"
+PACKAGIST_URL = "https://packagist.org/packages/"
 MONTHS_INACTIVE = 12
 
 
@@ -44,7 +46,7 @@ class PHP(Base):
 
         return {
             "name": data.get("name", ""),
-            "package_url": f"https://packagist.org/packages/{package_name}",
+            "package_url": f"{PACKAGIST_URL}{package_name}",
             "description": data.get("description", ""),
             "repository": data.get("repository", ""),
             "abandoned": data.get("abandoned", False),
@@ -59,6 +61,7 @@ class PHP(Base):
             "dependents": data.get("dependents", 0),
             "latest_release": latest_time_str,
             "cves_count": 0,
+            "suggested_package": None,
         }
 
     def fetch_security_advisories_batch(self, package_names):
@@ -81,6 +84,14 @@ class PHP(Base):
         url = POPULAR_URL
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=MONTHS_INACTIVE * 30)
         page_count = 0
+
+        # --- Load suggestions ---
+        try:
+            with open(SUGGESTIONS_FILE, "r", encoding="utf-8") as f:
+                suggestions_map = json.load(f)  # Already a dict: {"old": "new"}
+        except Exception:
+            suggestions_map = {}
+            print(f"Failed to load suggestions from {SUGGESTIONS_FILE}")
 
         while url and page_count < MAX_PAGES:
             page_count += 1
@@ -106,6 +117,10 @@ class PHP(Base):
                 except Exception as e:
                     print(f"Failed to fetch details for {name}: {e}")
                     continue
+
+                # --- Add suggested replacement if any ---
+                if name in suggestions_map:
+                    details["suggested_package"] = f"{PACKAGIST_URL}{suggestions_map[name]}"
 
                 packages_this_page.append(details)
 
