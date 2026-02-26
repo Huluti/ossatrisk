@@ -155,6 +155,13 @@ function render() {
         ? `<a href="${p.package_url}" class="pkg-vendor">${vendor}/</a><a href="${p.package_url}" class="pkg-name">${pkg}</a>`
         : `<a href="${p.package_url}" class="pkg-name">${p.name}</a>`;
 
+      const suggHtml = p.suggested_package
+        ? `
+        <div class="suggestion">
+          <a href="${p.suggested_package_url}" target="_blank" title="Suggested replacement" rel="noopener">${p.suggested_package}</a>
+        </div>`
+        : "";
+
       const score = p.score || 0;
       let scoreCls = score > 66 ? "score-high" : "score-mid";
       const scoreLabel = score.toLocaleString(undefined, {
@@ -162,9 +169,11 @@ function render() {
       });
 
       let dateCls = "date-cell";
-      let dateLabel = p.latest_release || "—";
+      let dateLabel = "—";
       if (p.latest_release) {
-        const ageMs = now - new Date(p.latest_release);
+        const releaseDate = new Date(p.latest_release);
+        dateLabel = releaseDate.toISOString().split("T")[0];
+        const ageMs = now - releaseDate;
         const ageDays = ageMs / 86400000;
         // Only two categories since no package < 12 months old
         if (ageDays < 730)
@@ -184,7 +193,7 @@ function render() {
       </a>`;
 
       return `<tr style="animation-delay:${Math.min(i, 30) * 12}ms">
-      <td>${nameHtml}</td>
+      <td>${nameHtml}${suggHtml}</td>
       <td class="num-cell">${(p.downloads_total || 0).toLocaleString()}</td>
       <td class="num-cell">${(p.favers || 0).toLocaleString()}</td>
       <td class="num-cell">${(p.github_open_issues || 0).toLocaleString()}</td>
