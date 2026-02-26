@@ -1,10 +1,8 @@
 import json
-import math
-import time
 import numpy as np
 from datetime import datetime, timedelta, timezone
 
-import httpx
+from base import Base
 
 # CONFIG
 MAX_PAGES = 30
@@ -19,212 +17,141 @@ POPULAR_URL = "https://packagist.org/explore/popular.json?per_page=50"
 MONTHS_INACTIVE = 12
 
 
-client = httpx.Client(http2=True)
+class PHP(Base):
+    def fetch_popular(self, url):
+        response = self.client.get(url)
+        response.raise_for_status()
+        return response.json()
 
+    def fetch_package_details(self, package_name):
+        # --- Package info ---
+        url = f"https://packagist.org/packages/{package_name}.json"
+        response = self.client.get(url)
+        response.raise_for_status()
+        data = response.json()["package"]
 
-def fetch_popular(url):
-    response = client.get(url)
-    response.raise_for_status()
-    return response.json()
+        versions = data.get("versions", {})
 
+        # Find latest version by time
+        latest_time_str = ""
+        for version, info in versions.items():
+            if "time" in info:
+                if latest_time_str == "" or info["time"] > latest_time_str:
+                    latest_time_str = info["time"]
 
-def fetch_package_details(package_name):
-    # --- Package info ---
-    url = f"https://packagist.org/packages/{package_name}.json"
-    response = client.get(url)
-    response.raise_for_status()
-    data = response.json()["package"]
+        downloads = data.get("downloads", {})
+        maintainers_count = max(1, len(data.get("maintainers", {})))
 
-    versions = data.get("versions", {})
+        return {
+            "name": data.get("name", ""),
+            "package_url": f"https://packagist.org/packages/{package_name}",
+            "description": data.get("description", ""),
+            "repository": data.get("repository", ""),
+            "abandoned": data.get("abandoned", False),
+            "maintainers_count": maintainers_count,
+            "downloads_total": downloads.get("total", 0),
+            "downloads_monthly": downloads.get("monthly", 0),
+            "downloads_daily": downloads.get("daily", 0),
+            "favers": data.get("favers", 0),
+            "github_stars": data.get("github_stars", 0),
+            "github_forks": data.get("github_forks", 0),
+            "github_open_issues": data.get("github_open_issues", 0),
+            "dependents": data.get("dependents", 0),
+            "latest_release": latest_time_str,
+            "cves_count": 0,
+        }
 
-    # Find latest version by time
-    latest_version = None
-    latest_time_str = ""
-    for version, info in versions.items():
-        if "time" in info:
-            if latest_time_str == "" or info["time"] > latest_time_str:
-                latest_time_str = info["time"]
-                latest_version = info
+    def fetch_security_advisories_batch(self, package_names):
+        params = [("packages[]", name) for name in package_names]
 
-    downloads = data.get("downloads", {})
-    maintainers_count = max(1, len(data.get("maintainers", {})))
+        response = self.client.get(
+            "https://packagist.org/api/security-advisories/",
+            params=params,
+        )
+        response.raise_for_status()
 
-    return {
-        "name": data.get("name", ""),
-        "package_url": f"https://packagist.org/packages/{package_name}",
-        "description": data.get("description", ""),
-        "repository": data.get("repository", ""),
-        "abandoned": data.get("abandoned", False),
-        "maintainers_count": maintainers_count,
-        "downloads_total": downloads.get("total", 0),
-        "downloads_monthly": downloads.get("monthly", 0),
-        "downloads_daily": downloads.get("daily", 0),
-        "favers": data.get("favers", 0),
-        "github_stars": data.get("github_stars", 0),
-        "github_forks": data.get("github_forks", 0),
-        "github_open_issues": data.get("github_open_issues", 0),
-        "dependents": data.get("dependents", 0),
-        "latest_release": latest_time_str,
-        "cves_count": 0,
-    }
+        data = response.json()
+        advisories_map = data.get("advisories", {})
 
+        # Return dict: {package_name: cve_count}
+        return {name: len(advisories_map.get(name, [])) for name in package_names}
 
-def fetch_security_advisories_batch(package_names):
-    params = [("packages[]", name) for name in package_names]
+    def run(self):
+        all_packages = []
+        url = POPULAR_URL
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=MONTHS_INACTIVE * 30)
+        page_count = 0
 
-    response = client.get(
-        "https://packagist.org/api/security-advisories/",
-        params=params,
-    )
-    response.raise_for_status()
+        while url and page_count < MAX_PAGES:
+            page_count += 1
+            print(f"Fetching popular packages (page {page_count}): {url}")
+            data = self.fetch_popular(url)
 
-    data = response.json()
-    advisories_map = data.get("advisories", {})
+            packages_this_page = []
 
-    # Return dict: {package_name: cve_count}
-    return {name: len(advisories_map.get(name, [])) for name in package_names}
+            # --- Fetch package details first ---
+            for pkg in data.get("packages", []):
+                name = pkg["name"]
 
-
-def compute_score(pkg):
-    """
-    Compute a risk score where HIGHER score = higher risk.
-
-    Factors:
-    - Recency: older releases = higher risk
-    - CVEs: more CVEs = higher risk
-    - Maintainers: single maintainer = higher risk
-    - Downloads: higher downloads = higher risk (more widely used → bigger impact)
-    - Open GitHub issues: more open issues = higher risk
-    """
-    monthly = int(pkg.get("downloads_monthly") or 0)
-    total_downloads = int(pkg.get("downloads_total") or 0)
-    maintainers = int(pkg.get("maintainers_count") or 1)
-    cves_count = int(pkg.get("cves_count") or 0)
-    open_issues = int(pkg.get("github_open_issues") or 0)
-
-    latest_str = pkg.get("latest_release") or ""
-
-    # --- Recency risk ---
-    recency_risk = 1.0
-    if latest_str:
-        try:
-            latest_dt = datetime.fromisoformat(latest_str.replace("Z", "+00:00"))
-            days_since = (datetime.now(timezone.utc) - latest_dt).days
-            recency_risk += math.exp(days_since / 365)  # older = higher risk
-        except Exception:
-            recency_risk += 2  # fallback risk if date missing
-
-    # Adjust recency risk based on open issues
-    if open_issues <= 5:
-        recency_risk *= 0.5  # lower importance if few issues
-    elif open_issues > 20:
-        recency_risk *= 1.2  # slightly higher if many issues
-
-    # --- CVE risk ---
-    cve_risk = 1 + cves_count * 2
-
-    # --- Maintainer risk ---
-    if maintainers <= 1:
-        maintainer_risk = 3
-    else:
-        maintainer_risk = 1 + 1 / math.log(maintainers + 1)
-
-    # --- Downloads risk ---
-    download_risk = math.log1p(monthly + total_downloads)
-
-    # --- Open issues risk ---
-    issues_risk = 1 + open_issues * 0.5
-
-    # --- Final risk score ---
-    risk_score = recency_risk * cve_risk * maintainer_risk * download_risk * issues_risk
-    return risk_score
-
-
-def main():
-    all_packages = []
-    url = POPULAR_URL
-    cutoff_date = datetime.now(timezone.utc) - timedelta(days=MONTHS_INACTIVE * 30)
-    page_count = 0
-
-    while url and page_count < MAX_PAGES:
-        page_count += 1
-        print(f"Fetching popular packages (page {page_count}): {url}")
-        data = fetch_popular(url)
-
-        packages_this_page = []
-
-        # --- Fetch package details first ---
-        for pkg in data.get("packages", []):
-            name = pkg["name"]
-
-            if any(name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
-                continue
-
-            if any(part in name for part in EXCLUDED_PARTS):
-                continue
-
-            try:
-                details = fetch_package_details(name)
-                if details["abandoned"]:
+                if any(name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
                     continue
-            except Exception as e:
-                print(f"Failed to fetch details for {name}: {e}")
-                continue
 
-            packages_this_page.append(details)
+                if any(part in name for part in EXCLUDED_PARTS):
+                    continue
 
-        # --- Batch CVE fetch ---
-        package_names = [p["name"] for p in packages_this_page]
-
-        if package_names:
-            try:
-                cve_counts = fetch_security_advisories_batch(package_names)
-                for p in packages_this_page:
-                    p["cves_count"] = cve_counts.get(p["name"], 0)
-            except Exception as e:
-                print(f"Failed to fetch security advisories batch: {e}")
-
-        # --- Filter inactive + compute score ---
-        for details in packages_this_page:
-            latest_release_str = details.get("latest_release")
-
-            if latest_release_str:
                 try:
-                    latest_release_dt = datetime.fromisoformat(
-                        latest_release_str.replace("Z", "+00:00")
-                    )
-                    if latest_release_dt > cutoff_date:
-                        continue  # skip active packages
-                except Exception:
-                    pass
+                    details = self.fetch_package_details(name)
+                    if details["abandoned"]:
+                        continue
+                except Exception as e:
+                    print(f"Failed to fetch details for {name}: {e}")
+                    continue
 
-            details["score"] = compute_score(details)
-            all_packages.append(details)
+                packages_this_page.append(details)
 
-        url = data.get("next")
+            # --- Batch CVE fetch ---
+            package_names = [p["name"] for p in packages_this_page]
 
-    # --- Normalize scores ---
-    raw_scores = np.array([p["score"] for p in all_packages])
+            if package_names:
+                try:
+                    cve_counts = self.fetch_security_advisories_batch(package_names)
+                    for p in packages_this_page:
+                        p["cves_count"] = cve_counts.get(p["name"], 0)
+                except Exception as e:
+                    print(f"Failed to fetch security advisories batch: {e}")
 
-    for i, p in enumerate(all_packages):
-        p["raw_score"] = raw_scores[i]
-        percentile = (raw_scores < raw_scores[i]).sum() / len(raw_scores)
-        p["score"] = max(1, round(percentile * 100))
+            # --- Filter inactive + compute score ---
+            for details in packages_this_page:
+                latest_release_str = details.get("latest_release")
 
-    # --- Sort descending by normalized score  ---
-    all_packages.sort(key=lambda p: p["score"], reverse=True)
+                if latest_release_str:
+                    try:
+                        latest_release_dt = datetime.fromisoformat(
+                            latest_release_str.replace("Z", "+00:00")
+                        )
+                        if latest_release_dt > cutoff_date:
+                            continue  # skip active packages
+                    except Exception:
+                        pass
 
-    # --- Save minified JSON ---
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(all_packages, f, ensure_ascii=False, separators=(",", ":"))
+                details["score"] = self.compute_score(details)
+                all_packages.append(details)
 
-    print(f"Saved {len(all_packages)} packages to {OUTPUT_FILE}")
+            url = data.get("next")
 
+        # --- Normalize scores ---
+        raw_scores = np.array([p["score"] for p in all_packages])
 
-if __name__ == "__main__":
-    start_time = time.perf_counter()
+        for i, p in enumerate(all_packages):
+            p["raw_score"] = raw_scores[i]
+            percentile = (raw_scores < raw_scores[i]).sum() / len(raw_scores)
+            p["score"] = max(1, round(percentile * 100))
 
-    main()
+        # --- Sort descending by normalized score  ---
+        all_packages.sort(key=lambda p: p["score"], reverse=True)
 
-    elapsed = time.perf_counter() - start_time
-    print(f"\nTotal execution time: {elapsed:.2f} seconds")
+        # --- Save minified JSON ---
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            json.dump(all_packages, f, ensure_ascii=False, separators=(",", ":"))
+
+        print(f"Saved {len(all_packages)} packages to {OUTPUT_FILE}")
