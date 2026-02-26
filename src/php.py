@@ -1,3 +1,4 @@
+import re
 import json
 import numpy as np
 from datetime import datetime, timedelta, timezone
@@ -11,11 +12,12 @@ EXCLUDED_PREFIXES = [
     "psr-discovery/",
     "composer/",
 ]
-EXCLUDED_PARTS = ["polyfill", "-compat", "_compat", "-pack"]  # they are meant to be outdated
+EXCLUDED_PARTS = ["polyfill", "compat", "pack"]  # they are meant to be outdated
 OUTPUT_FILE = "../data/php-packages.json"
 SUGGESTIONS_FILE = "../data/php-suggestions.json"
 POPULAR_URL = "https://packagist.org/explore/popular.json?per_page=50"
 PACKAGIST_URL = "https://packagist.org/packages/"
+
 
 class PHP(Base):
     def fetch_popular(self, url):
@@ -107,7 +109,10 @@ class PHP(Base):
                 if any(name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
                     continue
 
-                if any(part in name for part in EXCLUDED_PARTS):
+                if re.search(
+                    r"(?:^|[-_/])(" + "|".join(EXCLUDED_PARTS) + r")(?:$|[-_/])",
+                    name,
+                ):
                     continue
 
                 try:
