@@ -11,13 +11,11 @@ EXCLUDED_PREFIXES = [
     "psr-discovery/",
     "composer/",
 ]
-EXCLUDED_PARTS = ["polyfill", "-compat", "_compat"]  # they are meant to be outdated
+EXCLUDED_PARTS = ["polyfill", "-compat", "_compat", "-pack"]  # they are meant to be outdated
 OUTPUT_FILE = "../data/php-packages.json"
 SUGGESTIONS_FILE = "../data/php-suggestions.json"
 POPULAR_URL = "https://packagist.org/explore/popular.json?per_page=50"
 PACKAGIST_URL = "https://packagist.org/packages/"
-MONTHS_INACTIVE = 12
-
 
 class PHP(Base):
     def fetch_popular(self, url):
@@ -83,7 +81,8 @@ class PHP(Base):
     def run(self):
         all_packages = []
         url = POPULAR_URL
-        cutoff_date = datetime.now(timezone.utc) - timedelta(days=MONTHS_INACTIVE * 30)
+        # Take only packages with a release date older than one year
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=365)
         page_count = 0
 
         # --- Load suggestions ---
