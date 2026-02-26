@@ -62,6 +62,7 @@ class PHP(Base):
             "latest_release": latest_time_str,
             "cves_count": 0,
             "suggested_package": None,
+            "suggested_package_url": None,
         }
 
     def fetch_security_advisories_batch(self, package_names):
@@ -120,7 +121,10 @@ class PHP(Base):
 
                 # --- Add suggested replacement if any ---
                 if name in suggestions_map:
-                    details["suggested_package"] = f"{PACKAGIST_URL}{suggestions_map[name]}"
+                    details["suggested_package"] = suggestions_map[name]
+                    details["suggested_package_url"] = (
+                        f"{PACKAGIST_URL}{suggestions_map[name]}"
+                    )
 
                 packages_this_page.append(details)
 
