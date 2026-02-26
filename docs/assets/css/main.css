@@ -439,7 +439,7 @@ tbody tr:hover td {
 .suggestion {
   display: inline-flex;
   align-items: center;
-  margin: 4px;
+  margin: 4px 2px;
   gap: 5px;
   font-family: var(--font);
   font-size: 11px;

@@ -156,8 +156,8 @@ function render() {
         : `<a href="${p.package_url}" class="pkg-name">${p.name}</a>`;
 
       const suggHtml = p.suggested_package
-        ? `<div class="suggestion">
-          <a href="${p.suggested_package_url}" target="_blank" title="Suggested replacement" rel="noopener">✓ ${p.suggested_package}</a>
+        ? `<br>↳ <div class="suggestion">
+          <a href="${p.suggested_package_url}" target="_blank" title="Suggested replacement" rel="noopener">${p.suggested_package}</a>
         </div>`
         : "";
 
