@@ -1,14 +1,21 @@
 import httpx
 import math
+import json
+import numpy as np
 
 from datetime import datetime, timezone
+
+from package import Package
+
+
+OUTPUT_FOLDER = "../data/"
 
 
 class Base:
     def __init__(self):
         self.client = httpx.Client(http2=True)
 
-    def compute_score(self, pkg):
+    def compute_score(self, pkg: Package):
         """
         Compute a risk score where HIGHER score = higher risk.
 
@@ -19,13 +26,13 @@ class Base:
         - Downloads: higher downloads = higher risk (more widely used → bigger impact)
         - Open GitHub issues: more open issues = higher risk
         """
-        monthly = int(pkg.get("downloads_monthly") or 0)
-        total_downloads = int(pkg.get("downloads_total") or 0)
-        maintainers = int(pkg.get("maintainers_count") or 1)
-        cves_count = int(pkg.get("cves_count") or 0)
-        open_issues = int(pkg.get("github_open_issues") or 0)
+        monthly = int(pkg.downloads_monthly or 0)
+        total_downloads = int(pkg.downloads_total or 0)
+        maintainers = int(pkg.maintainers_count or 1)
+        cves_count = int(pkg.cves_count or 0)
+        open_issues = int(pkg.github_open_issues or 0)
 
-        latest_str = pkg.get("latest_release") or ""
+        latest_str = pkg.latest_release or ""
 
         # --- Recency risk ---
         recency_risk = 1.0
@@ -63,3 +70,27 @@ class Base:
             recency_risk * cve_risk * maintainer_risk * download_risk * issues_risk
         )
         return risk_score
+
+    def write_file(self, packages):
+        # --- Normalize scores ---
+        raw_scores = np.array([p.score for p in packages])
+
+        for i, p in enumerate(packages):
+            p.raw_score = raw_scores[i]
+            percentile = (raw_scores < raw_scores[i]).sum() / len(raw_scores)
+            p.score = max(1, round(percentile * 100))
+
+        # --- Sort descending by normalized score  ---
+        packages.sort(key=lambda p: p.score, reverse=True)
+
+        # --- Save minified JSON ---
+        output =  f"{OUTPUT_FOLDER}{self.__class__.__name__.lower()}-packages.json"
+        with open(output, "w", encoding="utf-8") as f:
+            json.dump(
+                [p.to_dict() for p in packages],
+                f,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+
+        print(f"Saved {len(packages)} packages to {output}")
