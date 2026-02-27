@@ -1,5 +1,4 @@
 import re
-import json
 from datetime import datetime, timedelta, timezone
 
 from base import Base
@@ -13,7 +12,6 @@ EXCLUDED_PREFIXES = [
     "composer/",
 ]
 EXCLUDED_PARTS = ["polyfill", "compat", "pack"]  # they are meant to be outdated
-SUGGESTIONS_FILE = "../data/php-suggestions.json"
 POPULAR_URL = "https://packagist.org/explore/popular.json?per_page=50"
 PACKAGIST_URL = "https://packagist.org/packages/"
 
@@ -76,6 +74,18 @@ class PHP(Base):
         # Return dict: {package_name: cves_count}
         return {name: len(advisories_map.get(name, [])) for name in package_names}
 
+    def excluded_package(self, name):
+        if any(name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
+            return True
+
+        if re.search(
+            r"(?:^|[-_/])(" + "|".join(EXCLUDED_PARTS) + r")(?:$|[-_/])",
+            name,
+        ):
+            return True
+
+        return False
+
     def run(self):
         all_packages = []
         url = POPULAR_URL
@@ -83,13 +93,7 @@ class PHP(Base):
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=365)
         page_count = 0
 
-        # --- Load suggestions ---
-        try:
-            with open(SUGGESTIONS_FILE, "r", encoding="utf-8") as f:
-                suggestions_map = json.load(f)  # Already a dict: {"old": "new"}
-        except Exception:
-            suggestions_map = {}
-            print(f"Failed to load suggestions from {SUGGESTIONS_FILE}")
+        suggestions = self.load_suggestions()
 
         while url and page_count < MAX_PAGES:
             page_count += 1
@@ -101,14 +105,7 @@ class PHP(Base):
             # --- Fetch package details first ---
             for pkg in data.get("packages", []):
                 name = pkg["name"]
-
-                if any(name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
-                    continue
-
-                if re.search(
-                    r"(?:^|[-_/])(" + "|".join(EXCLUDED_PARTS) + r")(?:$|[-_/])",
-                    name,
-                ):
+                if self.excluded_package(name):
                     continue
 
                 try:
@@ -120,10 +117,10 @@ class PHP(Base):
                     continue
 
                 # --- Add suggested replacement if any ---
-                if name in suggestions_map:
-                    details.suggested_package = suggestions_map[name]
+                if name in suggestions:
+                    details.suggested_package = suggestions[name]
                     details.suggested_package_url = (
-                        f"{PACKAGIST_URL}{suggestions_map[name]}"
+                        f"{PACKAGIST_URL}{suggestions[name]}"
                     )
 
                 packages_this_page.append(details)

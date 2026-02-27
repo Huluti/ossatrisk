@@ -7,13 +7,23 @@ from datetime import datetime, timezone
 
 from package import Package
 
-
+SUGGESTIONS_FOLDER = "../data/"
 OUTPUT_FOLDER = "../data/"
 
 
 class Base:
     def __init__(self):
         self.client = httpx.Client(http2=True)
+
+    def load_suggestions(self):
+        path = f"{SUGGESTIONS_FOLDER}{self.__class__.__name__.lower()}-suggestions.json"
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                suggestions_map = json.load(f)
+        except Exception:
+            suggestions_map = {}
+            print(f"Failed to load suggestions from {path}")
+        return suggestions_map
 
     def compute_score(self, pkg: Package):
         """
@@ -84,8 +94,8 @@ class Base:
         packages.sort(key=lambda p: p.score, reverse=True)
 
         # --- Save minified JSON ---
-        output =  f"{OUTPUT_FOLDER}{self.__class__.__name__.lower()}-packages.json"
-        with open(output, "w", encoding="utf-8") as f:
+        path = f"{OUTPUT_FOLDER}{self.__class__.__name__.lower()}-packages.json"
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(
                 [p.to_dict() for p in packages],
                 f,
@@ -93,4 +103,4 @@ class Base:
                 separators=(",", ":"),
             )
 
-        print(f"Saved {len(packages)} packages to {output}")
+        print(f"Saved {len(packages)} packages to {path}")
