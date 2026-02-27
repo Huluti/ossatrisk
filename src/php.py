@@ -77,7 +77,7 @@ class PHP(Base):
         data = response.json()
         advisories_map = data.get("advisories", {})
 
-        # Return dict: {package_name: cve_count}
+        # Return dict: {package_name: cves_count}
         return {name: len(advisories_map.get(name, [])) for name in package_names}
 
     def run(self):
@@ -137,9 +137,9 @@ class PHP(Base):
 
             if package_names:
                 try:
-                    cve_counts = self.fetch_security_advisories_batch(package_names)
+                    cves_count = self.fetch_security_advisories_batch(package_names)
                     for p in packages_this_page:
-                        p["cves_count"] = cve_counts.get(p["name"], 0)
+                        p["cves_count"] = cves_count.get(p["name"], 0)
                 except Exception as e:
                     print(f"Failed to fetch security advisories batch: {e}")
 
@@ -156,6 +156,10 @@ class PHP(Base):
                             continue  # skip active packages
                     except Exception:
                         pass
+
+                # Skip packages with no open issues AND no CVEs
+                if details["github_open_issues"] == 0 and details["cves_count"] == 0:
+                    continue
 
                 details["score"] = self.compute_score(details)
                 all_packages.append(details)
