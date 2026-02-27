@@ -6,13 +6,14 @@ from package import Package
 
 # CONFIG
 MAX_PAGES = 30
+PAGE_SIZE = 50
 EXCLUDED_PREFIXES = [
     "psr/",
     "psr-discovery/",
     "composer/",
 ]
 EXCLUDED_PARTS = ["polyfill", "compat", "pack"]  # they are meant to be outdated
-POPULAR_URL = "https://packagist.org/explore/popular.json?per_page=50"
+POPULAR_URL = f"https://packagist.org/explore/popular.json?per_page={PAGE_SIZE}"
 PACKAGIST_URL = "https://packagist.org/packages/"
 
 
