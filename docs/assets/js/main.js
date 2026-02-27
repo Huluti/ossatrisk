@@ -195,8 +195,8 @@ function render() {
       <td>${nameHtml}${suggHtml}</td>
       <td class="num-cell">${(p.downloads_total || 0).toLocaleString()}</td>
       <td class="num-cell">${(p.favers || 0).toLocaleString()}</td>
-      <td class="num-cell">${(p.github_open_issues || 0).toLocaleString()}</td>
       <td class="${dateCls}">${dateLabel}</td>
+      <td class="num-cell">${(p.github_open_issues || 0).toLocaleString()}</td>
       <td class="num-cell ${p.cves_count > 0 ? "error-cell" : ""}">${(p.cves_count || 0).toLocaleString()}</td>
       <td><span class="score-badge ${scoreCls}">${scoreLabel}</span></td>
       <td>${actionsHtml}</td>
