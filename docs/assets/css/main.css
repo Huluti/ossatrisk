@@ -37,6 +37,7 @@ header {
   padding: 18px 28px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 24px;
 }
 
@@ -74,9 +75,66 @@ header {
 }
 
 nav {
-  margin-left: auto;
   display: flex;
   gap: 6px;
+}
+
+.sponsor {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 12px;
+  background: #58a6ff08;
+  border: 1px solid #58a6ff22;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.sponsor:hover {
+  background: #58a6ff12;
+  border-color: #58a6ff55;
+}
+
+.sponsor-label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.sponsor-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sponsor-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.sponsor-desc {
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.sponsor-arrow {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 2px;
+  transition: transform 0.15s;
+}
+
+.sponsor:hover .sponsor-arrow {
+  transform: translateX(3px);
+  color: var(--accent);
 }
 
 .nav-link {
@@ -577,6 +635,10 @@ tbody tr {
 }
 
 @media (max-width: 700px) {
+  header {
+    flex-direction: column;
+    align-items: start;
+  }
   .stats-row {
     flex-direction: column;
     gap: 8px;
