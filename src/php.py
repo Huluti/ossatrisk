@@ -5,7 +5,7 @@ from base import Base
 from package import Package
 
 # CONFIG
-MAX_PAGES = 30
+MAX_PAGES = 60
 PAGE_SIZE = 50
 EXCLUDED_PREFIXES = [
     "psr/",
@@ -147,12 +147,14 @@ class PHP(Base):
                             latest_release_str.replace("Z", "+00:00")
                         )
                         if latest_release_dt > cutoff_date:
+                            print("Ignored package (release date):", details.name)
                             continue  # skip active packages
                     except Exception:
                         pass
 
                 # Skip packages with no open issues AND no CVEs
                 if details.github_open_issues == 0 and details.cves_count == 0:
+                    print("Ignored package (issues and CVEs):", details.name)
                     continue
 
                 details.score = self.compute_score(details)
