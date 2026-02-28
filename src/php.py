@@ -114,7 +114,7 @@ class PHP(Base):
                     if details.abandoned:
                         continue
                 except Exception as e:
-                    print(f"Failed to fetch details for {name}: {e}")
+                    print(f"- Failed to fetch details for {name}: {e}")
                     continue
 
                 # --- Add suggested replacement if any ---
@@ -135,7 +135,7 @@ class PHP(Base):
                     for p in packages_this_page:
                         p.cves_count = cves_count.get(p.name, 0)
                 except Exception as e:
-                    print(f"Failed to fetch security advisories batch: {e}")
+                    print(f"- Failed to fetch security advisories batch: {e}")
 
             # --- Filter inactive + compute score ---
             for details in packages_this_page:
@@ -147,14 +147,14 @@ class PHP(Base):
                             latest_release_str.replace("Z", "+00:00")
                         )
                         if latest_release_dt > cutoff_date:
-                            print("Ignored package (release date):", details.name)
+                            print("- Ignored package (release date):", details.name)
                             continue  # skip active packages
                     except Exception:
                         pass
 
                 # Skip packages with no open issues AND no CVEs
                 if details.github_open_issues == 0 and details.cves_count == 0:
-                    print("Ignored package (issues and CVEs):", details.name)
+                    print("- Ignored package (issues and CVEs):", details.name)
                     continue
 
                 details.score = self.compute_score(details)
