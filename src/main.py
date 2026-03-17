@@ -3,7 +3,7 @@ import time
 
 import click
 
-from builders.php import PHP
+from builders.php import PHPBuilder
 from scanner.php import PHPScanner
 
 
@@ -23,8 +23,8 @@ def build_data(ecosystem):
     start_time = time.perf_counter()
 
     if ecosystem == "php":
-        print("Launching PHP runner...")
-        runner = PHP()
+        print("Launching PHP builder...")
+        runner = PHPBuilder()
         runner.run()
     else:
         print("Unsupported language. Only 'php' is supported.")
@@ -41,6 +41,7 @@ def build_data(ecosystem):
     required=True,
 )
 def scan(ecosystem):
+    print(f"Scanning project for ecosystem: {ecosystem}")
     try:
         if ecosystem == "php":
             scanner = PHPScanner()

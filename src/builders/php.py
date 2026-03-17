@@ -17,7 +17,7 @@ POPULAR_URL = f"https://packagist.org/explore/popular.json?per_page={PAGE_SIZE}"
 PACKAGIST_URL = "https://packagist.org/packages/"
 
 
-class PHP(BaseBuilder):
+class PHPBuilder(BaseBuilder):
     def fetch_popular(self, url):
         response = self.client.get(url)
         response.raise_for_status()
