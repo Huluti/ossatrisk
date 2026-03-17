@@ -3,14 +3,21 @@ import time
 
 import click
 
-from builders.php import PHPBuilder
-from scanner.php import PHPScanner
+from . import __version__
+from .builders.php import PHPBuilder
+from .scanner.php import PHPScanner
 
 
 @click.group()
 def cli():
     """Main CLI entry point"""
     pass
+
+
+@cli.command()
+def version():
+    """Show ossatrisk version"""
+    print(f"ossatrisk version {__version__}")
 
 
 @cli.command()

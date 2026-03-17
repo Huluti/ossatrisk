@@ -1,8 +1,9 @@
 import re
 from datetime import datetime, timedelta, timezone
 
+from ..package import Package
+
 from .base import BaseBuilder
-from package import Package
 
 # CONFIG
 MAX_PAGES = 60

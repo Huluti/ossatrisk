@@ -5,7 +5,7 @@ import numpy as np
 
 from datetime import datetime, timezone
 
-from package import Package
+from ..package import Package
 
 SUGGESTIONS_FOLDER = "../data/"
 OUTPUT_FOLDER = "../data/"

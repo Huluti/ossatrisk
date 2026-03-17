@@ -9,6 +9,24 @@ The goal is not to name and shame, but to understand the ecosystem and suggest r
 - Starting with the **PHP ecosystem**. More ecosystems planned.
 - Datasets are updated daily.
 
+## CLI usage
+
+You can install **ossatrisk** via PyPI:
+
+```bash
+pip install ossatrisk
+```
+
+### Scan your project
+
+```bash
+# Scan the current directory for risky PHP packages
+ossatrisk scan --ecosystem php
+```
+
+* `--ecosystem` is required and currently supports only `php`.
+* If `composer.json` is present in your project, ossatrisk will check its dependencies against the risk database and suggest safer alternatives if any risky packages are found.
+
 ## Package Risk Assessment Algorithm
 
 This project evaluates the **risk level of software packages** based on several key factors, helping developers identify dependencies that may pose potential stability or security issues.
