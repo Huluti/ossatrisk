@@ -5,7 +5,13 @@ description = "Tracking high-risk oss packages: abandoned, undermaintained, or C
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "click>=8.3.1",
     "httpx[http2]>=0.28.1",
     "numpy>=2.4.2",
+]
+
+[dependency-groups]
+dev = [
+    "ty>=0.0.23",
     "ruff>=0.15.2",
 ]

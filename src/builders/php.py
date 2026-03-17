@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta, timezone
 
-from base import Base
+from .base import BaseBuilder
 from package import Package
 
 # CONFIG
@@ -17,7 +17,7 @@ POPULAR_URL = f"https://packagist.org/explore/popular.json?per_page={PAGE_SIZE}"
 PACKAGIST_URL = "https://packagist.org/packages/"
 
 
-class PHP(Base):
+class PHP(BaseBuilder):
     def fetch_popular(self, url):
         response = self.client.get(url)
         response.raise_for_status()

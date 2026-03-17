@@ -11,7 +11,7 @@ SUGGESTIONS_FOLDER = "../data/"
 OUTPUT_FOLDER = "../data/"
 
 
-class Base:
+class BaseBuilder:
     def __init__(self):
         self.client = httpx.Client(http2=True)
 
