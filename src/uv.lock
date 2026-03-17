@@ -157,8 +157,8 @@ wheels = [
 
 [[package]]
 name = "ossatrisk"
-version = "0.2.0"
-source = { virtual = "." }
+version = "0.3.0"
+source = { editable = "." }
 dependencies = [
     { name = "click" },
     { name = "httpx", extra = ["http2"] },
