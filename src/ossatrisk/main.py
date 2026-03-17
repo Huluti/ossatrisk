@@ -43,37 +43,50 @@ def build_data(ecosystem):
 
 @cli.command()
 @click.option(
-    "--ecosystem",
-    type=click.Choice(["php"], case_sensitive=False),
-    required=True,
+    "--ecosystem", type=click.Choice(["php"], case_sensitive=False), required=True
 )
-def scan(ecosystem):
-    print(f"Scanning project for ecosystem: {ecosystem}")
+@click.option("--format", type=click.Choice(["text", "json"]), default="text")
+@click.option("--ci", is_flag=True, help="CI-friendly output")
+def scan(ecosystem, format, ci):
+    results = []
     try:
-        if ecosystem == "php":
+        if ecosystem.lower() == "php":
             scanner = PHPScanner()
         else:
-            print("Unsupported ecosystem")
-            sys.exit(1)
-
+            click.echo("Unsupported ecosystem")
+            if ci:
+                sys.exit(1)
+            return
         results = scanner.scan()
-
     except FileNotFoundError as e:
-        print(f"❌ {e}")
+        click.echo(f"ERROR: {e}")
+        if ci:
+            sys.exit(1)
         return
+
+    if format == "json":
+        import json
+
+        print(json.dumps(results, indent=2))
+        if results and ci:
+            sys.exit(1)
+        return  # don’t exit in interactive mode
 
     if not results:
-        print("✅ No risky packages found")
+        click.echo("No risky packages found")
         return
 
-    print("⚠️ Risky packages found:\n")
+    click.echo("Risky packages found:")
     for pkg in results:
-        print(f"- {pkg['name']} (score: {pkg['score']})")
+        line = f"- {pkg['name']} (score: {pkg['score']})"
         if pkg["abandoned"]:
-            print("  ⚠️ Abandoned package")
+            line += " [ABANDONED]"
         if pkg["suggested"]:
-            print(f"  👉 Suggested alternative: {pkg['suggested']}")
-        print()
+            line += f" -> Suggested: {pkg['suggested']}"
+        click.echo(line)
+
+    if ci:
+        sys.exit(1)  # exit only in CI mode
 
 
 if __name__ == "__main__":
