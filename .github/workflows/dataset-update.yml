@@ -21,14 +21,12 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Install uv
-        run: |
-          curl -Ls https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      - name: Install ossatrisk
+        run: pip install ossatrisk
 
-      - name: Run Makefile target
+      - name: Run ossatrisk build
         working-directory: src
-        run: make run_php
+        run: ossatrisk build-data --ecosystem php
 
       - name: Commit and push changes
         run: |
