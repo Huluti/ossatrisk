@@ -1,6 +1,3 @@
-run_php:
-	uv run main.py build-data --ecosystem php
-
 format:
 	uv format
 
