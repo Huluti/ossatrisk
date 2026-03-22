@@ -28,13 +28,6 @@ ossatrisk scan --ecosystem php
 
 * `--ecosystem` (required) – currently supports only `php`.
 * `--format` – output format; `text` (default) or `json`. Use `json` for machine-readable output.
-* `--ci` – CI-friendly mode. When set, the command will exit with a non-zero code if risky packages are found and optionally suppress interactive formatting.
-
-**Example usage in CI with JSON output:**
-
-```bash
-ossatrisk scan --ecosystem php --format json --ci
-```
 
 If `composer.json` is present in your project, **ossatrisk** will check its dependencies against the risk database and suggest safer alternatives if any risky packages are found.
 
