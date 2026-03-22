@@ -1,6 +1,4 @@
-# JS
-node_modules/
-
-# Python
 .venv
 __pycache__/
+.ruff_cache
+dist/
