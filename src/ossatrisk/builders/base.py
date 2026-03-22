@@ -7,8 +7,8 @@ from datetime import datetime, timezone
 
 from ..package import Package
 
-SUGGESTIONS_FOLDER = "../data/"
-OUTPUT_FOLDER = "../data/"
+SUGGESTIONS_FOLDER = "data/"
+OUTPUT_FOLDER = "data/"
 
 
 class BaseBuilder:
