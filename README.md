@@ -27,7 +27,7 @@ ossatrisk scan --ecosystem php
 **Options:**
 
 * `--ecosystem` (required) – currently supports only `php`.
-* `--format` – output format; `text` (default) or `json`. Use `json` for CI-friendly or machine-readable output.
+* `--format` – output format; `text` (default) or `json`. Use `json` for machine-readable output.
 * `--ci` – CI-friendly mode. When set, the command will exit with a non-zero code if risky packages are found and optionally suppress interactive formatting.
 
 **Example usage in CI with JSON output:**

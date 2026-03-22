@@ -77,9 +77,10 @@ class PHPScanner(BaseScanner):
                 results.append(
                     {
                         "name": package,
+                        "score": pkg_data.get("score"),
+                        "cves_count": pkg_data.get("cves_count"),
                         "abandoned": pkg_data.get("abandoned"),
                         "suggested": pkg_data.get("suggested_package"),
-                        "score": pkg_data.get("score"),
                     }
                 )
 

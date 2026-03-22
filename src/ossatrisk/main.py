@@ -46,47 +46,65 @@ def build_data(ecosystem):
     "--ecosystem", type=click.Choice(["php"], case_sensitive=False), required=True
 )
 @click.option("--format", type=click.Choice(["text", "json"]), default="text")
-@click.option("--ci", is_flag=True, help="CI-friendly output")
-def scan(ecosystem, format, ci):
+def scan(ecosystem, format):
     results = []
     try:
         if ecosystem.lower() == "php":
             scanner = PHPScanner()
         else:
             click.echo("Unsupported ecosystem")
-            if ci:
-                sys.exit(1)
-            return
+            sys.exit(1)
         results = scanner.scan()
     except FileNotFoundError as e:
         click.echo(f"ERROR: {e}")
-        if ci:
-            sys.exit(1)
-        return
+        sys.exit(1)
+
+    # Sort results by score (highest first)
+    results = sorted(results, key=lambda x: x.get("score", 0), reverse=True)
 
     if format == "json":
         import json
 
         print(json.dumps(results, indent=2))
-        if results and ci:
+        if results:
             sys.exit(1)
-        return  # don’t exit in interactive mode
 
     if not results:
         click.echo("No risky packages found")
         return
 
-    click.echo("Risky packages found:")
-    for pkg in results:
-        line = f"- {pkg['name']} (score: {pkg['score']})"
-        if pkg["abandoned"]:
-            line += " [ABANDONED]"
-        if pkg["suggested"]:
-            line += f" -> Suggested: {pkg['suggested']}"
-        click.echo(line)
+    # Table output for text format
+    headers = ["Package", "Score", "Abandoned", "Suggested", "CVEs"]
+    rows = []
 
-    if ci:
-        sys.exit(1)  # exit only in CI mode
+    for pkg in results:
+        rows.append(
+            [
+                pkg.get("name", ""),
+                pkg.get("score", ""),
+                "Yes" if pkg.get("abandoned") else "No",
+                pkg.get("suggested", "") or "",
+                pkg.get("cves_count", 0),
+            ]
+        )
+
+    # Calculate column widths
+    col_widths = [
+        max(len(str(row[i])) for row in ([headers] + rows)) for i in range(len(headers))
+    ]
+
+    def format_row(row):
+        return " | ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(row))
+
+    separator = "-+-".join("-" * w for w in col_widths)
+
+    click.echo("Risky packages found:\n")
+    click.echo(format_row(headers))
+    click.echo(separator)
+    for row in rows:
+        click.echo(format_row(row))
+
+    sys.exit(1)
 
 
 if __name__ == "__main__":
