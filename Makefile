@@ -11,11 +11,11 @@ install_dev:
 	uv pip install -e . --group dev
 
 build:
-	rm -rf dist/
+	rm -rf .venv dist
 	uv build
 
 release:
-	rm -rf dist/
+	rm -rf .venv dist
 	uv build
 	uv run twine check dist/*
 	uv run twine upload dist/*

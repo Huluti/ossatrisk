@@ -1,6 +1,6 @@
 [project]
 name = "ossatrisk"
-version = "0.4.1"
+version = "0.4.2"
 description = "Tracking high-risk oss packages: abandoned, undermaintained, or CVE-exposed. "
 requires-python = ">=3.13"
 authors = [
@@ -33,6 +33,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build]
 sources = ["src"]
+dev-mode-dirs = ["src"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ossatrisk"]
+packages = ["ossatrisk"]
