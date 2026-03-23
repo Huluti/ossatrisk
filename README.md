@@ -29,8 +29,6 @@ ossatrisk scan --ecosystem php
 * `--ecosystem` (required) – currently supports only `php`.
 * `--format` – output format; `text` (default) or `json`. Use `json` for machine-readable output.
 
-If `composer.json` is present in your project, **ossatrisk** will check its dependencies against the risk database and suggest safer alternatives if any risky packages are found.
-
 ## Package Risk Assessment Algorithm
 
 This project evaluates the **risk level of software packages** based on several key factors, helping developers identify dependencies that may pose potential stability or security issues.
