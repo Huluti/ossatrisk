@@ -20,8 +20,6 @@ class BaseBuilder(ABC):
         pass
 
     def __init__(self):
-        if self.slug is None:
-            raise ValueError("slug must be defined in subclass")
         self.client = httpx.Client(http2=True)
 
     def load_suggestions(self):
