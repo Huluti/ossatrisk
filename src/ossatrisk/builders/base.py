@@ -3,13 +3,15 @@ import math
 import json
 import numpy as np
 
+from pathlib import Path
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 
 from ..package import Package
 
-SUGGESTIONS_FOLDER = "data/"
-OUTPUT_FOLDER = "data/"
+BASE_DIR = Path.cwd()
+SUGGESTIONS_FOLDER = BASE_DIR / "data"
+OUTPUT_FOLDER = BASE_DIR / "data"
 
 
 class BaseBuilder(ABC):
@@ -101,6 +103,7 @@ class BaseBuilder(ABC):
         packages.sort(key=lambda p: p.score, reverse=True)
 
         # --- Save minified JSON ---
+        OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
         path = f"{OUTPUT_FOLDER}{self.slug}-packages.json"
         with open(path, "w", encoding="utf-8") as f:
             json.dump(
