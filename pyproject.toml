@@ -1,6 +1,6 @@
 [project]
 name = "ossatrisk"
-version = "0.4.4"
+version = "0.4.5"
 description = "Tracking high-risk oss packages: abandoned, undermaintained, or CVE-exposed. "
 requires-python = ">=3.13"
 authors = [
