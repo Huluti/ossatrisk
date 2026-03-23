@@ -12,11 +12,13 @@ OUTPUT_FOLDER = "data/"
 
 
 class BaseBuilder:
+    slug = None
+
     def __init__(self):
         self.client = httpx.Client(http2=True)
 
     def load_suggestions(self):
-        path = f"{SUGGESTIONS_FOLDER}{self.__class__.__name__.lower()}-suggestions.json"
+        path = f"{SUGGESTIONS_FOLDER}{self.slug}-suggestions.json"
         try:
             with open(path, "r", encoding="utf-8") as f:
                 suggestions_map = json.load(f)
