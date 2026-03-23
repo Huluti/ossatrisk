@@ -3,6 +3,7 @@ import math
 import json
 import numpy as np
 
+from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 
 from ..package import Package
@@ -11,10 +12,16 @@ SUGGESTIONS_FOLDER = "data/"
 OUTPUT_FOLDER = "data/"
 
 
-class BaseBuilder:
-    slug = None
+class BaseBuilder(ABC):
+    @property
+    @abstractmethod
+    def slug(self) -> str:
+        """Each builder must define its slug"""
+        pass
 
     def __init__(self):
+        if self.slug is None:
+            raise ValueError("slug must be defined in subclass")
         self.client = httpx.Client(http2=True)
 
     def load_suggestions(self):
@@ -96,7 +103,7 @@ class BaseBuilder:
         packages.sort(key=lambda p: p.score, reverse=True)
 
         # --- Save minified JSON ---
-        path = f"{OUTPUT_FOLDER}{self.__class__.__name__.lower()}-packages.json"
+        path = f"{OUTPUT_FOLDER}{self.slug}-packages.json"
         with open(path, "w", encoding="utf-8") as f:
             json.dump(
                 [p.to_dict() for p in packages],

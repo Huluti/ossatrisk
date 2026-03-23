@@ -19,7 +19,9 @@ PACKAGIST_URL = "https://packagist.org/packages/"
 
 
 class PHPBuilder(BaseBuilder):
-    slug = "php"
+    @property
+    def slug(self) -> str:
+        return "php"
 
     def fetch_popular(self, url):
         response = self.client.get(url)
