@@ -4,7 +4,7 @@
 
 Only packages with high impact and broad usage are flagged.
 
-The goal isn’t to point fingers, but to map the ecosystem and improve it—by contributing fixes, keeping forks up to date, and making changes that reduce risk for downstream users.
+The goal isn’t to blame anyone, but to get a clear picture of the ecosystem and act constructively—through contributions, forks where necessary, and fixes that help everyone relying on the code.
 
 - Starting with the **PHP ecosystem**. More ecosystems planned.
 - Datasets are updated daily.
