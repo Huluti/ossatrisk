@@ -25,7 +25,7 @@ class BaseBuilder(ABC):
         self.client = httpx.Client(http2=True)
 
     def load_suggestions(self):
-        path = f"{SUGGESTIONS_FOLDER}{self.slug}-suggestions.json"
+        path = f"{SUGGESTIONS_FOLDER}/{self.slug}-suggestions.json"
         try:
             with open(path, "r", encoding="utf-8") as f:
                 suggestions_map = json.load(f)
@@ -104,7 +104,7 @@ class BaseBuilder(ABC):
 
         # --- Save minified JSON ---
         OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
-        path = f"{OUTPUT_FOLDER}{self.slug}-packages.json"
+        path = f"{OUTPUT_FOLDER}/{self.slug}-packages.json"
         with open(path, "w", encoding="utf-8") as f:
             json.dump(
                 [p.to_dict() for p in packages],
