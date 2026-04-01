@@ -11,6 +11,8 @@ CACHE_TTL = 24 * 3600  # 24 hours in seconds
 
 class PHPScanner(BaseScanner):
     def __init__(self):
+        super().__init__()
+
         self.project_path = Path.cwd()
         self.composer_file = self._find_composer_file()
         if not self.composer_file:
