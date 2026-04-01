@@ -1,5 +1,4 @@
 import json
-import urllib.request
 import time
 from pathlib import Path
 from .base import BaseScanner
@@ -56,8 +55,9 @@ class PHPScanner(BaseScanner):
                 return {pkg["name"]: pkg for pkg in data}
 
         # Download from DATA_URL
-        with urllib.request.urlopen(DATA_URL) as response:
-            data = json.loads(response.read().decode())
+        response = self.client.get(DATA_URL)
+        response.raise_for_status()
+        data = response.json()
 
         # Save to cache
         with open(self.cache_file, "w", encoding="utf-8") as f:

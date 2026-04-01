@@ -15,14 +15,14 @@ OUTPUT_FOLDER = BASE_DIR / "data"
 
 
 class BaseBuilder(ABC):
+    def __init__(self):
+        self.client = httpx.Client(http2=True)
+
     @property
     @abstractmethod
     def slug(self) -> str:
         """Each builder must define its slug"""
         pass
-
-    def __init__(self):
-        self.client = httpx.Client(http2=True)
 
     def load_suggestions(self):
         path = f"{SUGGESTIONS_FOLDER}/{self.slug}-suggestions.json"
