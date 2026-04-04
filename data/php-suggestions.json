@@ -1,3 +1,4 @@
 {
-  "jdorn/sql-formatter": "doctrine/sql-formatter"
+  "jdorn/sql-formatter": "doctrine/sql-formatter",
+  "io-developer/php-whois": "xternalsoft/php-whois"
 }
