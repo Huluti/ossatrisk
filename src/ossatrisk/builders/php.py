@@ -1,5 +1,6 @@
 import re
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from ..package import Package
 
@@ -24,15 +25,18 @@ class PHPBuilder(BaseBuilder):
         return "php"
 
     def fetch_popular(self, url):
-        response = self.client.get(url)
-        response.raise_for_status()
+        response = self.client.safe_get(url)
+        if not response:
+            raise Exception("Failed to fetch popular packages")
         return response.json()
 
-    def fetch_package_details(self, package_name):
+    def fetch_package_details(self, package_name) -> Optional[Package]:
         # --- Package info ---
         url = f"https://packagist.org/packages/{package_name}.json"
-        response = self.client.get(url)
-        response.raise_for_status()
+        response = self.client.safe_get(url)
+        if not response:
+            print(f"Failed to fetch package details for {package_name}")
+            return None
         data = response.json()["package"]
 
         versions = data.get("versions", {})
@@ -65,14 +69,16 @@ class PHPBuilder(BaseBuilder):
             latest_release=latest_time_str,
         )
 
-    def fetch_security_advisories_batch(self, package_names):
+    def fetch_security_advisories_batch(self, package_names) -> dict:
         params = [("packages[]", name) for name in package_names]
 
-        response = self.client.get(
+        response = self.client.safe_get(
             "https://packagist.org/api/security-advisories/",
             params=params,
         )
-        response.raise_for_status()
+        if not response:
+            print("Failed to fetch security advisories batch")
+            return {}
 
         data = response.json()
         advisories_map = data.get("advisories", {})
@@ -116,7 +122,7 @@ class PHPBuilder(BaseBuilder):
 
                 try:
                     details = self.fetch_package_details(name)
-                    if details.abandoned:
+                    if not details or details.abandoned:
                         continue
                 except Exception as e:
                     print(f"- Failed to fetch details for {name}: {e}")
@@ -135,12 +141,9 @@ class PHPBuilder(BaseBuilder):
             package_names = [p.name for p in packages_this_page]
 
             if package_names:
-                try:
-                    cves_count = self.fetch_security_advisories_batch(package_names)
-                    for p in packages_this_page:
-                        p.cves_count = cves_count.get(p.name, 0)
-                except Exception as e:
-                    print(f"- Failed to fetch security advisories batch: {e}")
+                cves_count = self.fetch_security_advisories_batch(package_names)
+                for p in packages_this_page:
+                    p.cves_count = cves_count.get(p.name, 0)
 
             # --- Filter inactive + compute score ---
             for details in packages_this_page:

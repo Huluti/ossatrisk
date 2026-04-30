@@ -57,8 +57,10 @@ class PHPScanner(BaseScanner):
                 return {pkg["name"]: pkg for pkg in data}
 
         # Download from DATA_URL
-        response = self.client.get(DATA_URL)
-        response.raise_for_status()
+        response = self.client.safe_get(DATA_URL)
+        if not response:
+            return {}
+
         data = response.json()
 
         # Save to cache
@@ -70,6 +72,8 @@ class PHPScanner(BaseScanner):
     def scan(self) -> list[dict]:
         composer_packages = self._load_composer_packages()
         risk_db = self._load_risk_db()
+        if len(risk_db) == 0:
+            raise Exception("Failed to load risk database")
 
         results = []
 

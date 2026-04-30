@@ -1,4 +1,3 @@
-import httpx
 import math
 import json
 import numpy as np
@@ -7,6 +6,7 @@ from pathlib import Path
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 
+from ossatrisk.http_client import HttpClient
 from ..package import Package
 
 BASE_DIR = Path.cwd()
@@ -16,7 +16,7 @@ OUTPUT_FOLDER = BASE_DIR / "data"
 
 class BaseBuilder(ABC):
     def __init__(self):
-        self.client = httpx.Client(http2=True)
+        self.client = HttpClient()
 
     @property
     @abstractmethod
