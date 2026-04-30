@@ -7,6 +7,9 @@ analyze:
 types:
 	uv run ty check
 
+upate_deps:
+	uv lock --upgrade
+
 install_dev:
 	uv pip install -e . --group dev
 
