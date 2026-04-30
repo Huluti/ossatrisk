@@ -1,29 +1,22 @@
 import json
-import time
 from pathlib import Path
 from .base import BaseScanner
 
-DATA_URL = (
-    "https://raw.githubusercontent.com/Huluti/ossatrisk/main/data/php-packages.json"
-)
-CACHE_TTL = 24 * 3600  # 24 hours in seconds
-
 
 class PHPScanner(BaseScanner):
+    DATA_URL = (
+        "https://raw.githubusercontent.com/Huluti/ossatrisk/main/data/php-packages.json"
+    )
+    CACHE_FILENAME = "php-packages.json"
+
     def __init__(self):
         super().__init__()
 
-        self.project_path = Path.cwd()
         self.composer_file = self._find_composer_file()
         if not self.composer_file:
             raise FileNotFoundError(
                 "composer.json not found in current folder or any parent directories"
             )
-
-        # Set up cache directory
-        self.cache_dir = Path.home() / ".cache" / "ossatrisk"
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
-        self.cache_file = self.cache_dir / "php-packages.json"
 
     def _find_composer_file(self) -> Path | None:
         """Search current folder and parents for composer.json"""
@@ -46,28 +39,6 @@ class PHPScanner(BaseScanner):
         require = data.get("require", {})
         require_dev = data.get("require-dev", {})
         return set(list(require.keys()) + list(require_dev.keys()))
-
-    def _load_risk_db(self) -> dict[str, dict]:
-        # Use cache if exists and is fresh
-        if self.cache_file.exists():
-            mtime = self.cache_file.stat().st_mtime
-            if time.time() - mtime < CACHE_TTL:
-                with open(self.cache_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                return {pkg["name"]: pkg for pkg in data}
-
-        # Download from DATA_URL
-        response = self.client.safe_get(DATA_URL)
-        if not response:
-            return {}
-
-        data = response.json()
-
-        # Save to cache
-        with open(self.cache_file, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-
-        return {pkg["name"]: pkg for pkg in data}
 
     def scan(self) -> list[dict]:
         composer_packages = self._load_composer_packages()
