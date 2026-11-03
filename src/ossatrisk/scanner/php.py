@@ -41,9 +41,9 @@ class PHPScanner(BaseScanner):
         require_dev = data.get("require-dev", {})
         return set(list(require.keys()) + list(require_dev.keys()))
 
-    def scan(self) -> list[dict]:
+    async def scan(self) -> list[dict]:
         composer_packages = self._load_composer_packages()
-        risk_db = self._load_risk_db()
+        risk_db = await self._load_risk_db()
         if len(risk_db) == 0:
             raise RuntimeError("Failed to load risk database")
 

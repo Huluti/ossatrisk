@@ -27,8 +27,8 @@ class JSBuilder(BaseBuilder):
     def slug(self) -> str:
         return "js"
 
-    def fetch_popular(self, from_offset: int):
-        response = self.client.safe_get(
+    async def fetch_popular(self, from_offset: int):
+        response = await self.client.safe_get(
             NPMS_SEARCH_URL,
             params={"size": PAGE_SIZE, "from": from_offset, "q": "not:deprecated"},
         )
@@ -36,18 +36,8 @@ class JSBuilder(BaseBuilder):
             raise RuntimeError("Failed to fetch popular packages")
         return response.json()
 
-    async def _get_with_retry(self, url: str, attempts: int = 4):
-        # npm APIs rate-limit aggressively; back off and retry before giving up
-        for i in range(attempts):
-            response = await self.client.safe_get_async(url)
-            if response is not None:
-                return response
-            if i < attempts - 1:
-                await asyncio.sleep(1 + i)
-        return None
-
     async def _downloads_point(self, period: str, package_name: str) -> int | None:
-        response = await self._get_with_retry(
+        response = await self.client.safe_get(
             f"{DOWNLOADS_URL}point/{period}/{package_name}"
         )
         if not response:
@@ -59,7 +49,7 @@ class JSBuilder(BaseBuilder):
         # package, so total = trailing 365 days
         end = datetime.now(UTC).date()
         start = end - timedelta(days=365)
-        response = await self._get_with_retry(
+        response = await self.client.safe_get(
             f"{DOWNLOADS_URL}range/{start}:{end}/{package_name}"
         )
         if not response:
@@ -96,7 +86,7 @@ class JSBuilder(BaseBuilder):
     async def fetch_packument(self, package_name: str) -> dict | None:
         # Full packument (not the abbreviated one) to get maintainers/repository/time
         url = f"{REGISTRY_URL}{quote(package_name, safe='@')}"
-        response = await self._get_with_retry(url)
+        response = await self.client.safe_get(url)
         if not response:
             return None
         return response.json()
@@ -144,7 +134,7 @@ class JSBuilder(BaseBuilder):
         if not package_names:
             return {}
 
-        response = await self.client.safe_post_async(
+        response = await self.client.safe_post(
             OSV_QUERYBATCH_URL,
             json={
                 "queries": [
@@ -192,7 +182,7 @@ class JSBuilder(BaseBuilder):
             print(
                 f"Fetching popular packages (page {page_count}): offset {from_offset}"
             )
-            data = self.fetch_popular(from_offset)
+            data = await self.fetch_popular(from_offset)
 
             results = data.get("results", [])
             if not results:

@@ -42,9 +42,9 @@ class JSScanner(BaseScanner):
             deps.update(data.get(key, {}))
         return set(deps.keys())
 
-    def scan(self) -> list[dict]:
+    async def scan(self) -> list[dict]:
         dependencies = self._load_dependencies()
-        risk_db = self._load_risk_db()
+        risk_db = await self._load_risk_db()
         if len(risk_db) == 0:
             raise RuntimeError("Failed to load risk database")
 

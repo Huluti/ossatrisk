@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import time
 
@@ -61,7 +62,7 @@ def scan(ecosystem, format):
         else:
             click.echo("Unsupported ecosystem")
             sys.exit(1)
-        results = scanner.scan()
+        results = asyncio.run(scanner.scan())
     except FileNotFoundError as e:
         click.echo(f"ERROR: {e}")
         sys.exit(1)

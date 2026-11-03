@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 import re
 from datetime import UTC, datetime, timedelta
@@ -23,16 +24,16 @@ class PHPBuilder(BaseBuilder):
     def slug(self) -> str:
         return "php"
 
-    def fetch_popular(self, url):
-        response = self.client.safe_get(url)
+    async def fetch_popular(self, url):
+        response = await self.client.safe_get(url)
         if not response:
             raise RuntimeError("Failed to fetch popular packages")
         return response.json()
 
-    def fetch_package_details(self, package_name) -> Package | None:
+    async def fetch_package_details(self, package_name) -> Package | None:
         # --- Package info ---
         url = f"https://packagist.org/packages/{package_name}.json"
-        response = self.client.safe_get(url)
+        response = await self.client.safe_get(url)
         if not response:
             print(f"Failed to fetch package details for {package_name}")
             return None
@@ -69,10 +70,10 @@ class PHPBuilder(BaseBuilder):
             latest_release=latest_time_str,
         )
 
-    def fetch_security_advisories_batch(self, package_names) -> dict:
+    async def fetch_security_advisories_batch(self, package_names) -> dict:
         params = [("packages[]", name) for name in package_names]
 
-        response = self.client.safe_get(
+        response = await self.client.safe_get(
             "https://packagist.org/api/security-advisories/",
             params=params,
         )
@@ -97,7 +98,17 @@ class PHPBuilder(BaseBuilder):
             )
         )
 
+    async def _safe_details(self, name: str) -> Package | None:
+        try:
+            return await self.fetch_package_details(name)
+        except (ValueError, TypeError, KeyError) as e:
+            print(f"- Failed to fetch details for {name}: {e}")
+            return None
+
     def run(self):
+        asyncio.run(self._run_async())
+
+    async def _run_async(self):
         all_packages = []
         url = POPULAR_URL
         # Take only packages with a release date older than one year
@@ -109,22 +120,20 @@ class PHPBuilder(BaseBuilder):
         while url and page_count < MAX_PAGES:
             page_count += 1
             print(f"Fetching popular packages (page {page_count}): {url}")
-            data = self.fetch_popular(url)
+            data = await self.fetch_popular(url)
+
+            # --- Fetch package details concurrently ---
+            names = [
+                pkg["name"]
+                for pkg in data.get("packages", [])
+                if not self.excluded_package(pkg["name"])
+            ]
+
+            details_list = await asyncio.gather(*(self._safe_details(n) for n in names))
 
             packages_this_page = []
-
-            # --- Fetch package details first ---
-            for pkg in data.get("packages", []):
-                name = pkg["name"]
-                if self.excluded_package(name):
-                    continue
-
-                try:
-                    details = self.fetch_package_details(name)
-                    if not details or details.abandoned:
-                        continue
-                except (ValueError, TypeError, KeyError) as e:
-                    print(f"- Failed to fetch details for {name}: {e}")
+            for name, details in zip(names, details_list):
+                if not details or details.abandoned:
                     continue
 
                 # --- Add suggested replacement if any ---
@@ -140,7 +149,7 @@ class PHPBuilder(BaseBuilder):
             package_names = [p.name for p in packages_this_page]
 
             if package_names:
-                cves_count = self.fetch_security_advisories_batch(package_names)
+                cves_count = await self.fetch_security_advisories_batch(package_names)
                 for p in packages_this_page:
                     p.cves_count = cves_count.get(p.name, 0)
 

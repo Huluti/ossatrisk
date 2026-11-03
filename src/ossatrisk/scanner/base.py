@@ -22,7 +22,7 @@ class BaseScanner(ABC):
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
     @abstractmethod
-    def scan(self) -> list[dict]:
+    async def scan(self) -> list[dict]:
         """Run the scan and return results"""
 
     def _read_cache(self, cache_file: Path) -> dict | None:
@@ -38,7 +38,7 @@ class BaseScanner(ABC):
         with open(cache_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
-    def _load_risk_db(self) -> dict[str, dict]:
+    async def _load_risk_db(self) -> dict[str, dict]:
         cache_file = self.cache_dir / self.CACHE_FILENAME
 
         data = self._read_cache(cache_file)
@@ -48,7 +48,7 @@ class BaseScanner(ABC):
 
         print(f"Downloading data from: {self.DATA_URL}")
 
-        response = self.client.safe_get(self.DATA_URL)
+        response = await self.client.safe_get(self.DATA_URL)
         if not response:
             print("Failed to download risk database")
             return {}
