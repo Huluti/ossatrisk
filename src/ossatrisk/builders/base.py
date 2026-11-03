@@ -114,3 +114,14 @@ class BaseBuilder(ABC):
             )
 
         print(f"Saved {len(packages)} packages to {path}")
+
+        # --- Save generation date for the website ---
+        meta_path = f"{OUTPUT_FOLDER}/{self.slug}-meta.json"
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump(
+                {"generated_at": datetime.now(timezone.utc).isoformat()},
+                f,
+                separators=(",", ":"),
+            )
+
+        print(f"Saved generation date to {meta_path}")

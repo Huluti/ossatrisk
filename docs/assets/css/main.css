@@ -309,6 +309,11 @@ main {
   color: #fff;
 }
 
+.stat-value--date {
+  font-size: 16px;
+  padding-top: 4px;
+}
+
 .stat-sub {
   font-size: 10px;
   color: var(--dim);

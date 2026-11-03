@@ -1,5 +1,6 @@
 let packages = [];
 let filtered = [];
+let generatedAt = null;
 let sortCol = "score"; // active data key
 let sortDir = "desc"; // 'asc' | 'desc'
 
@@ -31,14 +32,28 @@ document.querySelectorAll(".eco-tab:not(.soon)").forEach((tab) => {
 // ── Load data ───────────────────────────────────────────────
 async function loadJSON(url) {
   try {
+    generatedAt = null;
     const res = await fetch(url);
     packages = await res.json();
+    generatedAt = await loadGeneratedAt(url);
     updateStats();
     render();
   } catch (err) {
     tbody.innerHTML =
       '<tr class="status-row"><td colspan="5">⚠ failed to load data — check network or CORS</td></tr>';
     console.error(err);
+  }
+}
+
+async function loadGeneratedAt(url) {
+  try {
+    const metaUrl = url.replace(/-packages\.json$/, "-meta.json");
+    const res = await fetch(metaUrl);
+    if (!res.ok) return null;
+    const meta = await res.json();
+    return meta.generated_at || null;
+  } catch {
+    return null;
   }
 }
 
@@ -51,6 +66,9 @@ function updateStats() {
   document.getElementById("stat-total").textContent = total.toLocaleString();
   document.getElementById("stat-installs").textContent = fmtCompact(installs);
   document.getElementById("stat-favers").textContent = fmtCompact(favers);
+  document.getElementById("stat-updated").textContent = generatedAt
+    ? new Date(generatedAt).toISOString().split("T")[0]
+    : "—";
 }
 
 function fmtCompact(n) {
