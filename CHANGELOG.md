@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.5.1] - 2026-11-03
+
+- Fetch package data concurrently with a shared retrying async HTTP client
+
 ## [0.5.0] - 2026-11-03
 
 - Add JavaScript/npm ecosystem support (builder, scanner, website tab)
