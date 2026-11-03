@@ -47,7 +47,9 @@ class JSBuilder(BaseBuilder):
         return None
 
     async def _downloads_point(self, period: str, package_name: str) -> int | None:
-        response = await self._get_with_retry(f"{DOWNLOADS_URL}point/{period}/{package_name}")
+        response = await self._get_with_retry(
+            f"{DOWNLOADS_URL}point/{period}/{package_name}"
+        )
         if not response:
             return None
         return int(response.json().get("downloads", 0))
@@ -57,10 +59,14 @@ class JSBuilder(BaseBuilder):
         # package, so total = trailing 365 days
         end = datetime.now(UTC).date()
         start = end - timedelta(days=365)
-        response = await self._get_with_retry(f"{DOWNLOADS_URL}range/{start}:{end}/{package_name}")
+        response = await self._get_with_retry(
+            f"{DOWNLOADS_URL}range/{start}:{end}/{package_name}"
+        )
         if not response:
             return None
-        return sum(int(d.get("downloads", 0)) for d in response.json().get("downloads", []))
+        return sum(
+            int(d.get("downloads", 0)) for d in response.json().get("downloads", [])
+        )
 
     async def fetch_downloads(self, package_name: str):
         # daily downloads are not used downstream, so only fetch monthly + total
@@ -75,7 +81,11 @@ class JSBuilder(BaseBuilder):
     def _normalize_repository(self, repository) -> str:
         if not repository:
             return ""
-        url = repository.get("url", "") if isinstance(repository, dict) else str(repository)
+        url = (
+            repository.get("url", "")
+            if isinstance(repository, dict)
+            else str(repository)
+        )
         url = url.replace("git+", "").replace("git://", "https://")
         url = re.sub(r"^git@([^:]+):", r"https://\1/", url)
         url = url.removesuffix(".git")
@@ -179,7 +189,9 @@ class JSBuilder(BaseBuilder):
 
         while page_count < MAX_PAGES:
             page_count += 1
-            print(f"Fetching popular packages (page {page_count}): offset {from_offset}")
+            print(
+                f"Fetching popular packages (page {page_count}): offset {from_offset}"
+            )
             data = self.fetch_popular(from_offset)
 
             results = data.get("results", [])
@@ -242,7 +254,9 @@ class JSBuilder(BaseBuilder):
 
             if packages_this_page:
                 packages_this_page = list(
-                    await asyncio.gather(*(with_downloads(p) for p in packages_this_page))
+                    await asyncio.gather(
+                        *(with_downloads(p) for p in packages_this_page)
+                    )
                 )
 
             for details in packages_this_page:

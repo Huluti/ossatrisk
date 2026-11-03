@@ -1,4 +1,3 @@
-
 import asyncio
 
 import httpx
@@ -34,7 +33,9 @@ class HttpClient:
         except httpx.HTTPStatusError:
             return None
 
-    async def _request_async(self, method: str, url: str, **kwargs) -> httpx.Response | None:
+    async def _request_async(
+        self, method: str, url: str, **kwargs
+    ) -> httpx.Response | None:
         async with self._semaphore:
             try:
                 response = await self.async_client.request(method, url, **kwargs)
