@@ -69,9 +69,6 @@ Contributions welcome - especially:
 - Improving the project structure
 - Adding new ecosystems
 
-## Stargazers over time
-[![Stargazers over time](https://starchart.cc/Huluti/ossatrisk.svg?variant=adaptive)](https://starchart.cc/Huluti/ossatrisk)
-
 ## License
 
 MIT
