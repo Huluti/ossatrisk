@@ -4,16 +4,15 @@ import time
 import click
 
 from . import __version__
-from .builders.php import PHPBuilder
 from .builders.js import JSBuilder
-from .scanner.php import PHPScanner
+from .builders.php import PHPBuilder
 from .scanner.js import JSScanner
+from .scanner.php import PHPScanner
 
 
 @click.group()
 def cli():
     """Main CLI entry point"""
-    pass
 
 
 @cli.command()

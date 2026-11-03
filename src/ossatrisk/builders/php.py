@@ -1,9 +1,8 @@
+import contextlib
 import re
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 from ..package import Package
-
 from .base import BaseBuilder
 
 # CONFIG
@@ -27,10 +26,10 @@ class PHPBuilder(BaseBuilder):
     def fetch_popular(self, url):
         response = self.client.safe_get(url)
         if not response:
-            raise Exception("Failed to fetch popular packages")
+            raise RuntimeError("Failed to fetch popular packages")
         return response.json()
 
-    def fetch_package_details(self, package_name) -> Optional[Package]:
+    def fetch_package_details(self, package_name) -> Package | None:
         # --- Package info ---
         url = f"https://packagist.org/packages/{package_name}.json"
         response = self.client.safe_get(url)
@@ -43,10 +42,11 @@ class PHPBuilder(BaseBuilder):
 
         # Find latest version by time
         latest_time_str = ""
-        for version, info in versions.items():
-            if "time" in info:
-                if latest_time_str == "" or info["time"] > latest_time_str:
-                    latest_time_str = info["time"]
+        for info in versions.values():
+            if "time" in info and (
+                latest_time_str == "" or info["time"] > latest_time_str
+            ):
+                latest_time_str = info["time"]
 
         downloads = data.get("downloads", {})
         maintainers_count = max(1, len(data.get("maintainers", {})))
@@ -90,19 +90,18 @@ class PHPBuilder(BaseBuilder):
         if any(name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
             return True
 
-        if re.search(
-            r"(?:^|[-_/])(" + "|".join(EXCLUDED_PARTS) + r")(?:$|[-_/])",
-            name,
-        ):
-            return True
-
-        return False
+        return bool(
+            re.search(
+                r"(?:^|[-_/])(" + "|".join(EXCLUDED_PARTS) + r")(?:$|[-_/])",
+                name,
+            )
+        )
 
     def run(self):
         all_packages = []
         url = POPULAR_URL
         # Take only packages with a release date older than one year
-        cutoff_date = datetime.now(timezone.utc) - timedelta(days=365)
+        cutoff_date = datetime.now(UTC) - timedelta(days=365)
         page_count = 0
 
         suggestions = self.load_suggestions()
@@ -124,7 +123,7 @@ class PHPBuilder(BaseBuilder):
                     details = self.fetch_package_details(name)
                     if not details or details.abandoned:
                         continue
-                except Exception as e:
+                except (ValueError, TypeError, KeyError) as e:
                     print(f"- Failed to fetch details for {name}: {e}")
                     continue
 
@@ -150,15 +149,13 @@ class PHPBuilder(BaseBuilder):
                 latest_release_str = details.latest_release
 
                 if latest_release_str:
-                    try:
-                        latest_release_dt = datetime.fromisoformat(
-                            latest_release_str.replace("Z", "+00:00")
-                        )
-                        if latest_release_dt > cutoff_date:
-                            print("- Ignored package (release date):", details.name)
-                            continue  # skip active packages
-                    except Exception:
-                        pass
+                    skip = False
+                    with contextlib.suppress(ValueError, TypeError):
+                        latest_release_dt = datetime.fromisoformat(latest_release_str)
+                        skip = latest_release_dt > cutoff_date
+                    if skip:
+                        print("- Ignored package (release date):", details.name)
+                        continue  # skip active packages
 
                 # Skip packages with no open issues AND no CVEs
                 if details.github_open_issues == 0 and details.cves_count == 0:

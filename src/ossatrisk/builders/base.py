@@ -1,12 +1,13 @@
-import math
 import json
+import math
+from abc import ABC, abstractmethod
+from datetime import UTC, datetime
+from pathlib import Path
+
 import numpy as np
 
-from pathlib import Path
-from abc import ABC, abstractmethod
-from datetime import datetime, timezone
-
 from ossatrisk.http_client import HttpClient
+
 from ..package import Package
 
 BASE_DIR = Path.cwd()
@@ -22,14 +23,13 @@ class BaseBuilder(ABC):
     @abstractmethod
     def slug(self) -> str:
         """Each builder must define its slug"""
-        pass
 
     def load_suggestions(self):
         path = f"{SUGGESTIONS_FOLDER}/{self.slug}-suggestions.json"
         try:
             with open(path, "r", encoding="utf-8") as f:
                 suggestions_map = json.load(f)
-        except Exception:
+        except (OSError, ValueError):
             suggestions_map = {}
             print(f"Failed to load suggestions from {path}")
         return suggestions_map
@@ -57,10 +57,10 @@ class BaseBuilder(ABC):
         recency_risk = 1.0
         if latest_str:
             try:
-                latest_dt = datetime.fromisoformat(latest_str.replace("Z", "+00:00"))
-                days_since = (datetime.now(timezone.utc) - latest_dt).days
+                latest_dt = datetime.fromisoformat(latest_str)
+                days_since = (datetime.now(UTC) - latest_dt).days
                 recency_risk += math.exp(days_since / 365)  # older = higher risk
-            except Exception:
+            except (ValueError, TypeError, OverflowError):
                 recency_risk += 2  # fallback risk if date missing
 
         # Adjust recency risk based on open issues
@@ -119,7 +119,7 @@ class BaseBuilder(ABC):
         meta_path = f"{OUTPUT_FOLDER}/{self.slug}-meta.json"
         with open(meta_path, "w", encoding="utf-8") as f:
             json.dump(
-                {"generated_at": datetime.now(timezone.utc).isoformat()},
+                {"generated_at": datetime.now(UTC).isoformat()},
                 f,
                 separators=(",", ":"),
             )

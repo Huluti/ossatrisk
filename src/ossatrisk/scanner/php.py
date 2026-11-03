@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+
 from .base import BaseScanner
 
 
@@ -44,7 +45,7 @@ class PHPScanner(BaseScanner):
         composer_packages = self._load_composer_packages()
         risk_db = self._load_risk_db()
         if len(risk_db) == 0:
-            raise Exception("Failed to load risk database")
+            raise RuntimeError("Failed to load risk database")
 
         results = []
 

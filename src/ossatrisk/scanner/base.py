@@ -1,8 +1,8 @@
-from abc import ABC, abstractmethod
-
 import json
 import time
+from abc import ABC, abstractmethod
 from pathlib import Path
+
 from ossatrisk.http_client import HttpClient
 
 CACHE_TTL = 24 * 3600  # 24 hours in seconds
@@ -24,7 +24,6 @@ class BaseScanner(ABC):
     @abstractmethod
     def scan(self) -> list[dict]:
         """Run the scan and return results"""
-        pass
 
     def _read_cache(self, cache_file: Path) -> dict | None:
         if cache_file.exists():

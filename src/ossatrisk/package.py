@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -10,20 +9,20 @@ class Package:
     repository: str
     abandoned: bool
     maintainers_count: int
-    downloads_total: Optional[int]
-    downloads_monthly: Optional[int]
-    downloads_daily: Optional[int]
-    favers: Optional[int]
-    github_stars: Optional[int]
-    github_forks: Optional[int]
-    github_open_issues: Optional[int]
-    dependents: Optional[int]
+    downloads_total: int | None
+    downloads_monthly: int | None
+    downloads_daily: int | None
+    favers: int | None
+    github_stars: int | None
+    github_forks: int | None
+    github_open_issues: int | None
+    dependents: int | None
     latest_release: str
     cves_count: int = 0
-    suggested_package: Optional[str] = None
-    suggested_package_url: Optional[str] = None
-    score: Optional[float] = None
-    raw_score: Optional[float] = None
+    suggested_package: str | None = None
+    suggested_package_url: str | None = None
+    score: float | None = None
+    raw_score: float | None = None
 
     def to_dict(self):
         """Convert object to serializable dict"""

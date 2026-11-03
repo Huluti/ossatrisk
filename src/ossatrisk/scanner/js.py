@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+
 from .base import BaseScanner
 
 
@@ -45,7 +46,7 @@ class JSScanner(BaseScanner):
         dependencies = self._load_dependencies()
         risk_db = self._load_risk_db()
         if len(risk_db) == 0:
-            raise Exception("Failed to load risk database")
+            raise RuntimeError("Failed to load risk database")
 
         results = []
 

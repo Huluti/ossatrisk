@@ -1,11 +1,10 @@
+import contextlib
 import re
 import time
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 from urllib.parse import quote
 
 from ..package import Package
-
 from .base import BaseBuilder
 
 # CONFIG
@@ -33,7 +32,7 @@ class JSBuilder(BaseBuilder):
             params={"size": PAGE_SIZE, "from": from_offset, "q": "not:deprecated"},
         )
         if not response:
-            raise Exception("Failed to fetch popular packages")
+            raise RuntimeError("Failed to fetch popular packages")
         return response.json()
 
     def _get_with_retry(self, url: str, attempts: int = 3):
@@ -46,16 +45,16 @@ class JSBuilder(BaseBuilder):
                 time.sleep(1 + i)
         return None
 
-    def _downloads_point(self, period: str, package_name: str) -> Optional[int]:
+    def _downloads_point(self, period: str, package_name: str) -> int | None:
         response = self._get_with_retry(f"{DOWNLOADS_URL}point/{period}/{package_name}")
         if not response:
             return None
         return int(response.json().get("downloads", 0))
 
-    def _downloads_range_year(self, package_name: str) -> Optional[int]:
+    def _downloads_range_year(self, package_name: str) -> int | None:
         # npm has no all-time point query and the full range is too heavy per
         # package, so total = trailing 365 days
-        end = datetime.now(timezone.utc).date()
+        end = datetime.now(UTC).date()
         start = end - timedelta(days=365)
         response = self._get_with_retry(f"{DOWNLOADS_URL}range/{start}:{end}/{package_name}")
         if not response:
@@ -81,7 +80,7 @@ class JSBuilder(BaseBuilder):
             return ""
         return url
 
-    def fetch_package_details(self, package_name) -> Optional[Package]:
+    def fetch_package_details(self, package_name) -> Package | None:
         # Full packument (not the abbreviated one) to get maintainers/repository/time
         url = f"{REGISTRY_URL}{quote(package_name, safe='@')}"
         response = self._get_with_retry(url)
@@ -148,18 +147,17 @@ class JSBuilder(BaseBuilder):
         if any(name.startswith(prefix) for prefix in EXCLUDED_PREFIXES):
             return True
 
-        if re.search(
-            r"(?:^|[-_/@])(" + "|".join(EXCLUDED_PARTS) + r")(?:$|[-_/])",
-            name,
-        ):
-            return True
-
-        return False
+        return bool(
+            re.search(
+                r"(?:^|[-_/@])(" + "|".join(EXCLUDED_PARTS) + r")(?:$|[-_/])",
+                name,
+            )
+        )
 
     def run(self):
         all_packages = []
         # Take only packages with a release date older than one year
-        cutoff_date = datetime.now(timezone.utc) - timedelta(days=365)
+        cutoff_date = datetime.now(UTC) - timedelta(days=365)
         page_count = 0
         from_offset = 0
 
@@ -186,7 +184,7 @@ class JSBuilder(BaseBuilder):
                     details = self.fetch_package_details(name)
                     if not details or details.abandoned:
                         continue
-                except Exception as e:
+                except (ValueError, TypeError, KeyError) as e:
                     print(f"- Failed to fetch details for {name}: {e}")
                     continue
 
@@ -210,15 +208,13 @@ class JSBuilder(BaseBuilder):
                 latest_release_str = details.latest_release
 
                 if latest_release_str:
-                    try:
-                        latest_release_dt = datetime.fromisoformat(
-                            latest_release_str.replace("Z", "+00:00")
-                        )
-                        if latest_release_dt > cutoff_date:
-                            print("- Ignored package (release date):", details.name)
-                            continue  # skip active packages
-                    except Exception:
-                        pass
+                    skip = False
+                    with contextlib.suppress(ValueError, TypeError):
+                        latest_release_dt = datetime.fromisoformat(latest_release_str)
+                        skip = latest_release_dt > cutoff_date
+                    if skip:
+                        print("- Ignored package (release date):", details.name)
+                        continue  # skip active packages
 
                 # Open issues are unavailable without the GitHub API, so keep
                 # only packages with at least one CVE
