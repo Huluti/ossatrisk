@@ -25,7 +25,9 @@ jobs:
         run: pip install ossatrisk
 
       - name: Run ossatrisk build
-        run: ossatrisk build-data --ecosystem php
+        run: |
+          ossatrisk build-data --ecosystem php
+          ossatrisk build-data --ecosystem js
 
       - name: Commit and push changes
         run: |

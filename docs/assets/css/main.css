@@ -29,6 +29,8 @@ body {
   font-size: 13px;
   line-height: 1.6;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── Header ── */
@@ -159,6 +161,8 @@ main {
   max-width: 1400px;
   margin: 0 auto;
   padding: 32px 28px;
+  flex: 1;
+  width: 100%;
 }
 
 /* ── Command bar ── */

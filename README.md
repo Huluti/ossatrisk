@@ -6,7 +6,7 @@ Only packages with high impact and broad usage are flagged.
 
 The goal isn’t to blame anyone, but to get a clear picture of the ecosystem and act constructively, through contributions, forks where necessary, and fixes that help everyone relying on the code.
 
-- Starting with the **PHP ecosystem**. More ecosystems planned.
+- **PHP** and **JavaScript/npm** ecosystems supported. More ecosystems planned.
 - Datasets are updated daily.
 
 ## CLI usage
@@ -20,13 +20,14 @@ pip install ossatrisk
 ### Scan your project
 
 ```bash
-# Scan the current directory for risky PHP packages
-ossatrisk scan --ecosystem php
+# Scan the current directory for risky packages
+ossatrisk scan --ecosystem php   # reads composer.json
+ossatrisk scan --ecosystem js    # reads package.json
 ```
 
 **Options:**
 
-* `--ecosystem` (required) – currently supports only `php`.
+* `--ecosystem` (required) – supports `php` and `js`.
 * `--format` – output format; `text` (default) or `json`. Use `json` for machine-readable output.
 
 ## Package Risk Assessment Algorithm

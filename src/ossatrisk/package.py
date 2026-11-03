@@ -10,14 +10,14 @@ class Package:
     repository: str
     abandoned: bool
     maintainers_count: int
-    downloads_total: int
-    downloads_monthly: int
-    downloads_daily: int
-    favers: int
-    github_stars: int
-    github_forks: int
-    github_open_issues: int
-    dependents: int
+    downloads_total: Optional[int]
+    downloads_monthly: Optional[int]
+    downloads_daily: Optional[int]
+    favers: Optional[int]
+    github_stars: Optional[int]
+    github_forks: Optional[int]
+    github_open_issues: Optional[int]
+    dependents: Optional[int]
     latest_release: str
     cves_count: int = 0
     suggested_package: Optional[str] = None

@@ -60,12 +60,18 @@ async function loadGeneratedAt(url) {
 // ── Stats ───────────────────────────────────────────────────
 function updateStats() {
   const total = packages.length;
-  const installs = packages.reduce((s, p) => s + (p.downloads_total || 0), 0);
+  const hasFavers = packages.some((p) => p.favers != null);
   const favers = packages.reduce((s, p) => s + (p.favers || 0), 0);
+  const hasInstalls = packages.some((p) => p.downloads_total != null);
+  const installs = packages.reduce((s, p) => s + (p.downloads_total || 0), 0);
 
   document.getElementById("stat-total").textContent = total.toLocaleString();
-  document.getElementById("stat-installs").textContent = fmtCompact(installs);
-  document.getElementById("stat-favers").textContent = fmtCompact(favers);
+  document.getElementById("stat-installs").textContent = hasInstalls
+    ? fmtCompact(installs)
+    : "—";
+  document.getElementById("stat-favers").textContent = hasFavers
+    ? fmtCompact(favers)
+    : "—";
   document.getElementById("stat-updated").textContent = generatedAt
     ? new Date(generatedAt).toISOString().split("T")[0]
     : "—";
@@ -211,10 +217,14 @@ function render() {
 
       return `<tr style="animation-delay:${Math.min(i, 30) * 12}ms">
       <td>${nameHtml}${suggHtml}</td>
-      <td class="num-cell">${(p.downloads_total || 0).toLocaleString()}</td>
-      <td class="num-cell">${(p.favers || 0).toLocaleString()}</td>
+      <td class="num-cell">${
+        p.downloads_total == null ? "—" : p.downloads_total.toLocaleString()
+      }</td>
+      <td class="num-cell">${p.favers == null ? "—" : p.favers.toLocaleString()}</td>
       <td class="${dateCls}">${dateLabel}</td>
-      <td class="num-cell">${(p.github_open_issues || 0).toLocaleString()}</td>
+      <td class="num-cell ${p.github_open_issues > 0 ? "error-cell" : ""}">${
+        p.github_open_issues == null ? "—" : p.github_open_issues.toLocaleString()
+      }</td>
       <td class="num-cell ${p.cves_count > 0 ? "error-cell" : ""}">${(p.cves_count || 0).toLocaleString()}</td>
       <td><span class="score-badge ${scoreCls}">${scoreLabel}</span></td>
       <td>${actionsHtml}</td>

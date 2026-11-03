@@ -5,7 +5,9 @@ import click
 
 from . import __version__
 from .builders.php import PHPBuilder
+from .builders.js import JSBuilder
 from .scanner.php import PHPScanner
+from .scanner.js import JSScanner
 
 
 @click.group()
@@ -23,7 +25,7 @@ def version():
 @cli.command()
 @click.option(
     "--ecosystem",
-    type=click.Choice(["php"], case_sensitive=False),
+    type=click.Choice(["php", "js"], case_sensitive=False),
     required=True,
 )
 def build_data(ecosystem):
@@ -32,10 +34,14 @@ def build_data(ecosystem):
     if ecosystem == "php":
         print("Launching PHP builder...")
         runner = PHPBuilder()
-        runner.run()
+    elif ecosystem == "js":
+        print("Launching JS builder...")
+        runner = JSBuilder()
     else:
-        print("Unsupported language. Only 'php' is supported.")
+        print("Unsupported ecosystem.")
         sys.exit(1)
+
+    runner.run()
 
     elapsed = time.perf_counter() - start_time
     print(f"\nTotal execution time: {elapsed:.2f} seconds")
@@ -43,7 +49,7 @@ def build_data(ecosystem):
 
 @cli.command()
 @click.option(
-    "--ecosystem", type=click.Choice(["php"], case_sensitive=False), required=True
+    "--ecosystem", type=click.Choice(["php", "js"], case_sensitive=False), required=True
 )
 @click.option("--format", type=click.Choice(["text", "json"]), default="text")
 def scan(ecosystem, format):
@@ -51,6 +57,8 @@ def scan(ecosystem, format):
     try:
         if ecosystem.lower() == "php":
             scanner = PHPScanner()
+        elif ecosystem.lower() == "js":
+            scanner = JSScanner()
         else:
             click.echo("Unsupported ecosystem")
             sys.exit(1)

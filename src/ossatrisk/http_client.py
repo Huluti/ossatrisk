@@ -15,3 +15,13 @@ class HttpClient:
             return None
         except httpx.HTTPStatusError:
             return None
+
+    def safe_post(self, url: str, **kwargs) -> Optional[httpx.Response]:
+        try:
+            response = self.client.post(url, **kwargs)
+            response.raise_for_status()
+            return response
+        except httpx.RequestError:
+            return None
+        except httpx.HTTPStatusError:
+            return None
